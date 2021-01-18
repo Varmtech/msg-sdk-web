@@ -3,9 +3,9 @@ export default Sceyt;
 declare class Sceyt {
   chatClient: ChatClient;
   constructor(connectionTimeout?: number);
-  get ConnectionListener(): typeof ConnectionListener;
-  get ChannelListener(): typeof ChannelListener;
-  get user(): User;
+  ConnectionListener(): ConnectionListener;
+  ChannelListener(): ChannelListener;
+  user(): User;
   addChannelListener: (uniqueListenerId: string, channelListener: ChannelListener) => void;
   removeChannelListener: (uniqueListenerId: string) => void;
   addConnectionListener: (uniqueListenerId: string, connectionListener: ConnectionListener) => void;
@@ -28,22 +28,22 @@ declare class ChatClient {
   constructor();
   static getInstance(): ChatClient;
   setOption: (key: string, value: number) => void;
-  getTotalUnreads: () => Promise<unknown>;
+  getTotalUnreads: () => Promise<{ totalUnread: number, unreadChannels: number }>;
   updateToken: (jwt: string) => Promise<unknown>;
   uploadFile: (file: File) => void;
   getRoles: () => Promise<string[]>;
   getUsers: (usersIds: string[]) => Promise<User[]>;
-  get PublicChannel(): typeof PublicChannel;
-  get PrivateChannel(): typeof PrivateChannel;
-  get DirectChannel(): typeof DirectChannel;
-  get ChannelQueryBuilder(): typeof ChannelQueryBuilder;
-  get MembersQueryBuilder(): typeof MembersQueryBuilder;
-  get BlockedMembersQueryBuilder(): typeof BlockedMembersQueryBuilder;
-  get MessageListQueryBuilder(): typeof MessageQueryBuilder;
-  get MessageByTypeListQueryBuilder(): typeof MessageByTypeQueryBuilder;
-  get UserListQueryBuilder(): typeof UsersQueryBuilder;
-  get BlockedChannelListQuery(): typeof BlockedQueryBuilder;
-  get HiddenQueryBuilder(): typeof HiddenQueryBuilder;
+  PublicChannel: PublicChannel;
+  PrivateChannel: PrivateChannel;
+  DirectChannel: DirectChannel;
+  ChannelQueryBuilder(): ChannelQueryBuilder;
+  MembersQueryBuilder(): MembersQueryBuilder;
+  BlockedMembersQueryBuilder(): BlockedMembersQueryBuilder;
+  MessageListQueryBuilder(): MessageQueryBuilder;
+  MessageByTypeListQueryBuilder(): MessageByTypeQueryBuilder;
+  UserListQueryBuilder(): UsersQueryBuilder;
+  BlockedChannelListQuery(): BlockedQueryBuilder;
+  HiddenQueryBuilder(): HiddenQueryBuilder;
 }
 
 interface ICreatePublicChannel {
@@ -54,6 +54,7 @@ interface ICreatePublicChannel {
   label: string;
   uri: string;
 }
+
 interface ICreatePrivateChannel {
   members: IMemberAction[];
   metadata: string;
@@ -128,6 +129,7 @@ interface IMessageQuerySearch {
 interface IChannelListeners {
   [key: string]: ChannelListener;
 }
+
 interface IConnectionListeners {
   [key: string]: ConnectionListener;
 }
@@ -261,12 +263,12 @@ declare class UsersQueryBuilder extends QueryBuilder {
   build: () => Promise<UsersQuery>;
 }
 
-declare class UsersQuery extends Query {
+interface UsersQuery extends Query {
   order: UserSearchOrder;
   query: string;
   index: number;
-  constructor(usersQueryBuilder: UsersQueryBuilder);
-  loadNextPage: () => Promise<User[]>;
+  limit: (count: number) => this;
+  loadNextPage: () => Promise<{ users: User[], hasNext: boolean }>;
 }
 
 declare class ChannelQueryBuilder extends QueryBuilder {
@@ -292,14 +294,13 @@ declare class ChannelQueryBuilder extends QueryBuilder {
   build: () => Promise<ChannelQuery>;
 }
 
-declare class ChannelQuery extends Query {
+interface ChannelQuery extends Query {
   ctype: ChannelType;
   fields: never[];
   sort: ChannelSearchQuerySortOptions;
   index: number;
   totalUnread?: number;
-  constructor(queryBuilder: ChannelQueryBuilder);
-  limit: (limit: number) => void;
+  limit: (limit: number) => this;
   loadNextPage: () => Promise<{
     channels: (PrivateChannel | PublicChannel | DirectChannel)[];
     totalUnread: number;
@@ -313,26 +314,12 @@ declare class HiddenQueryBuilder extends QueryBuilder {
   limit: (count: number) => this;
   build: () => Promise<HiddenQuery>;
 }
-declare class HiddenQuery extends Query {
+
+interface HiddenQuery extends Query {
   index: number;
-  constructor(queryBuilder: HiddenQueryBuilder);
   limit: (count: number) => void;
   loadNextPage: () => Promise<{
     channels: Channel;
-    hasNext: boolean;
-  }>;
-}
-
-declare class MembersQuery extends Query {
-  channelId: string;
-  type: MembersType;
-  order: MembersOrder;
-  key: MembersOrderKey;
-  index: number;
-  constructor(membersQueryBuilder: MembersQueryBuilder);
-  limit: (limit: number) => void;
-  loadNextPage: () => Promise<{
-    members: Member[];
     hasNext: boolean;
   }>;
 }
@@ -356,6 +343,20 @@ declare class MembersQueryBuilder extends QueryBuilder {
   orderKeyByLastname: () => this;
   build: () => Promise<MembersQuery>;
 }
+
+interface MembersQuery extends Query {
+  channelId: string;
+  type: MembersType;
+  order: MembersOrder;
+  key: MembersOrderKey;
+  index: number;
+  limit: (limit: number) => void;
+  loadNextPage: () => Promise<{
+    members: Member[];
+    hasNext: boolean;
+  }>;
+}
+
 declare class BlockedMembersQueryBuilder extends QueryBuilder {
   channelId: string;
   i: number;
@@ -364,26 +365,28 @@ declare class BlockedMembersQueryBuilder extends QueryBuilder {
   limit: (count: number) => this;
   build: () => BlockedMembersQuery;
 }
-declare class BlockedMembersQuery extends Query {
+
+interface BlockedMembersQuery extends Query {
   channelId: string;
   index: number;
-  constructor(blockedMembersQueryBuilder: BlockedMembersQueryBuilder);
   loadNextPage: () => Promise<Member[]>;
 }
+
 declare class BlockedQueryBuilder extends QueryBuilder {
   i: number;
   hasNext: boolean;
   limit: (count: number) => this;
+  constructor();
   build: () => Promise<BlockedQuery>;
 }
 
-declare class BlockedQuery extends Query {
+interface BlockedQuery extends Query {
   index: number;
   channels?: Channel[];
-  constructor(queryBuilder: BlockedQueryBuilder);
   limit: (limit: number) => void;
   loadNextPage: () => Promise<never[] | this>;
 }
+
 declare class MessageQueryBuilder extends QueryBuilder {
   channelId: string;
   queryDirection: MessageQueryDirection;
@@ -398,7 +401,7 @@ declare class MessageQueryBuilder extends QueryBuilder {
   update: () => this;
   build: () => Promise<MessageQuery>;
 }
-declare class MessageQuery extends Query {
+interface MessageQuery extends Query {
   channelId: string;
   queryDirection: MessageQueryDirection;
   timestamp?: number;
@@ -410,7 +413,6 @@ declare class MessageQuery extends Query {
   lastMessageId?: number | null;
   firstMessageId?: number | null;
   hasPrev: boolean;
-  constructor(messageQueryBuilder: MessageQueryBuilder);
   limit: (limit: number) => this;
   reverse: (isReverse: boolean) => this;
   next: () => Promise<{
@@ -418,103 +420,19 @@ declare class MessageQuery extends Query {
     complete: boolean | undefined;
   }>;
   prev: () => Promise<{
-    messages: {
-      date: Date;
-      to: string;
-      status: number;
-      from: {
-        id: string;
-        firstName: string | null;
-        lastName: string | null;
-        avatarUrl: string | null;
-        presenceStatus: PresenceStatus;
-        metadata: string | null;
-        update: (profile: IUserProfile) => Promise<IUserProfile>;
-      };
-      isIncoming: boolean;
-      text: string;
-      tid?: number | undefined;
-      id: number;
-      type: string;
-      metadata: string;
-      chStatus: MessageUpdateStatus;
-      attachments: IAttachment[];
-    }[];
+    messages: Message[];
     complete: boolean | undefined;
   }>;
   near: () => Promise<{
-    messages: {
-      date: Date;
-      to: string;
-      status: number;
-      from: {
-        id: string;
-        firstName: string | null;
-        lastName: string | null;
-        avatarUrl: string | null;
-        presenceStatus: PresenceStatus;
-        metadata: string | null;
-        update: (profile: IUserProfile) => Promise<IUserProfile>;
-      };
-      isIncoming: boolean;
-      text: string;
-      tid?: number | undefined;
-      id: number;
-      type: string;
-      metadata: string;
-      chStatus: MessageUpdateStatus;
-      attachments: IAttachment[];
-    }[];
+    messages: Message[];
     complete: boolean | undefined;
   }>;
-  nearMessageId: (messageId?: number | undefined) => Promise<{
-    messages: {
-      date: Date;
-      to: string;
-      status: number;
-      from: {
-        id: string;
-        firstName: string | null;
-        lastName: string | null;
-        avatarUrl: string | null;
-        presenceStatus: PresenceStatus;
-        metadata: string | null;
-        update: (profile: IUserProfile) => Promise<IUserProfile>;
-      };
-      isIncoming: boolean;
-      text: string;
-      tid?: number | undefined;
-      id: number;
-      type: string;
-      metadata: string;
-      chStatus: MessageUpdateStatus;
-      attachments: IAttachment[];
-    }[];
+  nearMessageId: (messageId: number) => Promise<{
+    messages: Message[];
     complete: boolean | undefined;
   }>;
-  nearTimestamp: (timeStamp?: number | undefined) => Promise<{
-    messages: {
-      date: Date;
-      to: string;
-      status: number;
-      from: {
-        id: string;
-        firstName: string | null;
-        lastName: string | null;
-        avatarUrl: string | null;
-        presenceStatus: PresenceStatus;
-        metadata: string | null;
-        update: (profile: IUserProfile) => Promise<IUserProfile>;
-      };
-      isIncoming: boolean;
-      text: string;
-      tid?: number | undefined;
-      id: number;
-      type: string;
-      metadata: string;
-      chStatus: MessageUpdateStatus;
-      attachments: IAttachment[];
-    }[];
+  nearTimestamp: (timeStamp: number) => Promise<{
+    messages: Message[];
     complete: boolean | undefined;
   }>;
 }
@@ -550,7 +468,8 @@ declare class MessageByTypeQueryBuilder extends QueryBuilder {
   reverse: (isReverse: boolean) => void;
   build: () => Promise<MessageByTypeQuery>;
 }
-declare class MessageByTypeQuery extends Query {
+
+interface MessageByTypeQuery extends Query {
   channelId: string;
   queryDirection: MessageQueryDirection;
   timestamp?: number;
@@ -558,70 +477,49 @@ declare class MessageByTypeQuery extends Query {
   type: MessageQueryType;
   msgType?: string;
   reverseData: boolean;
-  constructor(messageByTypeQueryBuilder: MessageByTypeQueryBuilder);
   limit: (limit: number) => this;
   reverse: (isReverse: boolean) => void;
   loadNextPage: () => Promise<{
-    messages: {
-      date: Date;
-      to: string;
-      status: number;
-      from: {
-        id: string;
-        firstName: string | null;
-        lastName: string | null;
-        avatarUrl: string | null;
-        presenceStatus: PresenceStatus;
-        metadata: string | null;
-        update: (profile: IUserProfile) => Promise<IUserProfile>;
-      };
-      isIncoming: boolean;
-      text: string;
-      tid?: number | undefined;
-      id: number;
-      type: string;
-      metadata: string;
-      chStatus: MessageUpdateStatus;
-      attachments: IAttachment[];
-    }[];
+    messages: Message[];
     complete: boolean | undefined;
   }>;
 }
+
 declare class ChannelListener {
-  onMessageEdited: () => undefined;
-  onMessageDeleted: () => undefined;
-  onMessage: () => undefined;
-  onLeave: () => undefined;
-  onBlock: () => undefined;
-  onUnBlock: () => undefined;
-  onJoin: () => undefined;
-  onCreate: () => undefined;
-  onUpdate: () => undefined;
-  onDelete: () => undefined;
-  onMemberAdded: () => undefined;
-  onMemberRemoved: () => undefined;
-  onMemberBlocked: () => undefined;
-  onMemberUnblocked: () => undefined;
-  onStartTyping: () => undefined;
-  onStopTyping: () => undefined;
-  onUpdateDeliveryReceipt: () => undefined;
-  onUpdateReadReceipt: () => undefined;
-  onUpdateUnreadCounts: () => undefined;
-  onHide: () => undefined;
-  onUnhide: () => undefined;
-  onChannelMarkedAsUnread: () => undefined;
-  onClearHistory: () => undefined;
-  onChangeRole: () => undefined;
-  onOwnerChange: () => undefined;
+  onMessageEdited: (channel: Channel, message: Message) => void;
+  onMessageDeleted: (channel: Channel, message: Message) => void;
+  onMessage: (channel: Channel, message: Message) => void;
+  onLeave: (channel: Channel, member: Member) => void;
+  onBlock: (channel: Channel) => void;
+  onUnBlock: (channel: Channel) => void;
+  onJoin: (channel: Channel, member: Member) => void;
+  onCreate: (channel: Channel) => void;
+  onUpdate: (channel: Channel) => void;
+  onDelete: (channelId: string) => void;
+  onMemberAdded: (channel: Channel, members: Member[]) => void;
+  onMemberRemoved: (channel: Channel, members: Member[]) => void;
+  onMemberBlocked: (channel: Channel, members: Member[]) => void;
+  onMemberUnblocked: (channel: Channel, members: Member[]) => void;
+  onStartTyping: (channel: Channel, member: Member) => void;
+  onStopTyping: (channel: Channel, member: Member) => void;
+  onUpdateDeliveryReceipt: (channel: Channel) => void;
+  onUpdateReadReceipt: (channel: Channel) => void;
+  onUpdateTotalUnreadCount: (channel: Channel) => void;
+  onHide: (channel: Channel) => void;
+  onUnhide: (channel: Channel) => void;
+  onMarkAsUnread: (channel: Channel) => void;
+  onClearHistory: (channel: Channel) => void;
+  onChangeRole: (channel: Channel, members: Member[]) => void;
+  onOwnerChange: (channel: Channel, newOwner: Member, oldOwner: Member) => void;
 }
 
 declare class ConnectionListener {
-  onReconnectStarted: () => undefined;
-  onReconnectSucceeded: () => undefined;
-  onReconnectFailed: () => undefined;
-  onDisconnected: () => undefined;
-  onTokenWillExpire: () => undefined;
-  onTokenExpired: () => undefined;
+  onReconnectStarted: () => void;
+  onReconnectSucceeded: () => void;
+  onReconnectFailed: () => void;
+  onDisconnected: () => void;
+  onTokenWillExpire: (timeInterval: number) => void;
+  onTokenExpired: () => void;
 }
 
 declare class User {
@@ -631,16 +529,14 @@ declare class User {
   avatarUrl: string | null;
   presenceStatus: PresenceStatus;
   metadata: string | null;
-  constructor();
   update: (profile: IUserProfile) => Promise<IUserProfile>;
 }
 
-declare class Member extends User {
-  role: string | undefined;
-  constructor();
+interface Member extends User {
+  role: string;
 }
 
-declare class Message {
+interface Message {
   from: User;
   to: string;
   text: string;
@@ -653,10 +549,9 @@ declare class Message {
   metadata: string;
   chStatus: MessageUpdateStatus;
   attachments: IAttachment[];
-  constructor();
 }
 
-declare class Channel {
+interface Channel {
   lastMessage: Message | null;
   lastRead: number;
   lastDelivery: number;
@@ -668,7 +563,6 @@ declare class Channel {
   updatedAt: Date | number;
   id: string;
   isMarkedAsUnread: boolean;
-  constructor();
   delete: () => Promise<void>;
   hide: () => Promise<boolean>;
   unhide: () => Promise<boolean>;
@@ -681,25 +575,18 @@ declare class Channel {
   createMessageBuilder: () => MessageBuilder;
   deleteMessage: (msgId: number, ) => Promise<Message>;
   editMessage: (msgId: number, body: string, ) => Promise<Message>;
-  startTyping: () => Promise<unknown>;
-  stopTyping: () => Promise<unknown>;
+  startTyping: () => Promise<Message>;
+  stopTyping: () => Promise<Message>;
   markAllMessagesAsDelivered: () => void;
   markAllMessagesAsRead: () => void;
-  markAsUnRead: () => Promise<unknown>;
+  markAsUnRead: () => Promise<Channel>;
 }
 
-declare class DirectChannel extends Channel {
-  pear: Member;
-  constructor();
-  static create(channelData: ICreateDirectChannel): Promise<DirectChannel>;
-}
-
-declare class GroupChannel extends Channel {
+interface GroupChannel extends Channel {
   membersCount: number;
   subject: string;
   avatarUrl: string;
   myRole: string;
-  constructor();
   addMembers: (members: IMemberAction[]) => Promise<Member[]>;
   kickMembers: (memberIds: string[], ) => Promise<Member[]>;
   blockMembers: (memberIds: string[], ) => Promise<Member[]>;
@@ -711,14 +598,17 @@ declare class GroupChannel extends Channel {
   leave: () => Promise<void>;
 }
 
-declare class PrivateChannel extends GroupChannel {
-  constructor();
-  static create(channelData: ICreatePrivateChannel): Promise<PrivateChannel>;
+interface DirectChannel extends Channel {
+  pear: Member;
+  create(channelData: ICreateDirectChannel): Promise<DirectChannel>;
 }
 
-declare class PublicChannel extends GroupChannel {
+interface PrivateChannel extends GroupChannel {
+  create(channelData: ICreatePrivateChannel): Promise<PrivateChannel>;
+}
+
+interface PublicChannel extends GroupChannel {
   uri: string;
-  constructor();
-  static create(channelData: ICreatePublicChannel): Promise<PublicChannel>;
+  create(channelData: ICreatePublicChannel): Promise<PublicChannel>;
   join: () => Promise<Member>;
 }
