@@ -5,7 +5,7 @@ declare class Sceyt {
   constructor(connectionTimeout?: number);
   ConnectionListener(): ConnectionListener;
   ChannelListener(): ChannelListener;
-  user(): User;
+  user: User;
   addChannelListener: (uniqueListenerId: string, channelListener: ChannelListener) => void;
   removeChannelListener: (uniqueListenerId: string) => void;
   addConnectionListener: (uniqueListenerId: string, connectionListener: ConnectionListener) => void;
@@ -39,8 +39,8 @@ declare class ChatClient {
   ChannelQueryBuilder(): ChannelQueryBuilder;
   MembersQueryBuilder(): MembersQueryBuilder;
   BlockedMembersQueryBuilder(): BlockedMembersQueryBuilder;
-  MessageListQueryBuilder(): MessageQueryBuilder;
-  MessageByTypeListQueryBuilder(): MessageByTypeQueryBuilder;
+  MessageListQueryBuilder(channelId: string): MessageQueryBuilder;
+  MessageByTypeListQueryBuilder(channelId: string): MessageByTypeQueryBuilder;
   UserListQueryBuilder(): UsersQueryBuilder;
   BlockedChannelListQuery(): BlockedQueryBuilder;
   HiddenQueryBuilder(): HiddenQueryBuilder;
@@ -135,10 +135,10 @@ interface IConnectionListeners {
 }
 
 interface IUserProfile {
-  firstName: string | null;
-  lastName: string | null;
-  avatarUrl: string | null;
-  metadata: string | null;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+  metadata?: string;
 }
 
 declare enum ChannelSearchQuerySortOptions {
@@ -544,7 +544,7 @@ interface Message {
   tid?: number;
   id: number;
   type: string;
-  status: number;
+  status: MessageDeliveryStatus;
   isIncoming: boolean;
   metadata: string;
   chStatus: MessageUpdateStatus;
