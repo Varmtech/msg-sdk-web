@@ -30,14 +30,14 @@ declare class ChatClient {
   setOption: (key: string, value: number) => void;
   getTotalUnreads: () => Promise<{ totalUnread: number, unreadChannels: number }>;
   updateToken: (jwt: string) => Promise<unknown>;
-  uploadFile: (file: File) => void;
+  uploadFile: (file: { data: File, progress: ()=> number }) => void;
   getRoles: () => Promise<string[]>;
   getUsers: (usersIds: string[]) => Promise<User[]>;
   PublicChannel: PublicChannel;
   PrivateChannel: PrivateChannel;
   DirectChannel: DirectChannel;
   ChannelQueryBuilder(): ChannelQueryBuilder;
-  MembersQueryBuilder(): MembersQueryBuilder;
+  MembersQueryBuilder(channelId: string): MembersQueryBuilder;
   BlockedMembersQueryBuilder(): BlockedMembersQueryBuilder;
   MessageListQueryBuilder(channelId: string): MessageQueryBuilder;
   MessageByTypeListQueryBuilder(channelId: string): MessageByTypeQueryBuilder;
@@ -79,14 +79,6 @@ interface IChannelConfig {
 interface IMemberAction {
   role: string;
   id: string;
-}
-
-interface IChannelMethods {
-  addMembers: (members: Member[]) => Promise<Member[]>;
-  kickMembers: (members: Member[]) => Promise<Member[]>;
-  delete: () => Promise<{
-    deleted: boolean;
-  }>;
 }
 
 export declare type IUploadProgress = (progressPercent: number) => void;
