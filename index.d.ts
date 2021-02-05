@@ -591,7 +591,7 @@ interface GroupChannel extends Channel {
 }
 
 interface DirectChannel extends Channel {
-  pear: Member;
+  peer: Member;
   create(channelData: ICreateDirectChannel): Promise<DirectChannel>;
 }
 
