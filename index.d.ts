@@ -496,7 +496,7 @@ declare class ChannelListener {
   onStopTyping: (channel: Channel, member: Member) => void;
   onUpdateDeliveryReceipt: (channel: Channel) => void;
   onUpdateReadReceipt: (channel: Channel) => void;
-  onUpdateTotalUnreadCount: (channel: Channel) => void;
+  onUpdateTotalUnreadCount: (channel: Channel, totalUnread: number, unreadChannels: number) => void;
   onHide: (channel: Channel) => void;
   onUnhide: (channel: Channel) => void;
   onMarkAsUnread: (channel: Channel) => void;
