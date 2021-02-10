@@ -33,6 +33,7 @@ declare class ChatClient {
   uploadFile: (file: { data: File, progress: ()=> number }) => void;
   getRoles: () => Promise<string[]>;
   getUsers: (usersIds: string[]) => Promise<User[]>;
+  blockUsers: (usersIds: string[]) => Promise<User[]>;
   PublicChannel: PublicChannel;
   PrivateChannel: PrivateChannel;
   DirectChannel: DirectChannel;
@@ -42,6 +43,7 @@ declare class ChatClient {
   MessageListQueryBuilder(channelId: string): MessageQueryBuilder;
   MessageByTypeListQueryBuilder(channelId: string): MessageByTypeQueryBuilder;
   UserListQueryBuilder(): UsersQueryBuilder;
+  BlockedUserListQueryBuilder(): BlockedUsersQueryBuilder;
   BlockedChannelListQuery(): BlockedQueryBuilder;
   HiddenQueryBuilder(): HiddenQueryBuilder;
 }
@@ -256,6 +258,28 @@ declare class UsersQueryBuilder extends QueryBuilder {
 }
 
 interface UsersQuery extends Query {
+  order: UserSearchOrder;
+  query: string;
+  index: number;
+  limit: (count: number) => this;
+  loadNextPage: () => Promise<{ users: User[], hasNext: boolean }>;
+}
+
+declare class BlockedUsersQueryBuilder extends QueryBuilder {
+  type: MembersType;
+  order: UserSearchOrder;
+  searchQuery: string;
+  i: number;
+  hasNext: boolean;
+  constructor();
+  limit: (count: number) => this;
+  query: (query: string) => this;
+  orderByFirstname: () => this;
+  orderByLastname: () => this;
+  build: () => Promise<BlockedUsersQuery>;
+}
+
+interface BlockedUsersQuery extends Query {
   order: UserSearchOrder;
   query: string;
   index: number;
