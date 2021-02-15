@@ -32,6 +32,7 @@ declare class ChatClient {
   updateToken: (jwt: string) => Promise<unknown>;
   uploadFile: (file: { data: File, progress: ()=> number }) => void;
   getRoles: () => Promise<string[]>;
+  setProfile: (profile: IUserProfile) => Promise<IUserProfile>;
   getUsers: (usersIds: string[]) => Promise<User[]>;
   blockUsers: (usersIds: string[]) => Promise<User[]>;
   PublicChannel: PublicChannel;
@@ -545,7 +546,6 @@ declare class User {
   avatarUrl: string | null;
   presenceStatus: PresenceStatus;
   metadata: string | null;
-  update: (profile: IUserProfile) => Promise<IUserProfile>;
 }
 
 interface Member extends User {
