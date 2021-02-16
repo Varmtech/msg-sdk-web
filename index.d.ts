@@ -532,13 +532,9 @@ declare class ChannelListener {
 }
 
 declare class ConnectionListener {
-  onReconnectStarted: () => void;
-  onReconnectSucceeded: () => void;
-  onReconnectFailed: () => void;
-  onDisconnected: () => void;
   onTokenWillExpire: (timeInterval: number) => void;
   onTokenExpired: () => void;
-  onChangeConnectStatus: () => void;
+  onChangeConnectStatus: (status: string) => void;
 }
 
 declare class User {
