@@ -35,6 +35,7 @@ declare class ChatClient {
   setProfile: (profile: IUserProfile) => Promise<IUserProfile>;
   getUsers: (usersIds: string[]) => Promise<User[]>;
   blockUsers: (usersIds: string[]) => Promise<User[]>;
+  unblockUsers: (usersIds: string[]) => Promise<User[]>;
   PublicChannel: PublicChannel;
   PrivateChannel: PrivateChannel;
   DirectChannel: DirectChannel;
@@ -537,6 +538,7 @@ declare class ConnectionListener {
   onDisconnected: () => void;
   onTokenWillExpire: (timeInterval: number) => void;
   onTokenExpired: () => void;
+  onChangeConnectStatus: () => void;
 }
 
 declare class User {
@@ -546,6 +548,7 @@ declare class User {
   avatarUrl: string | null;
   presenceStatus: PresenceStatus;
   metadata: string | null;
+  blocked: boolean
 }
 
 interface Member extends User {
