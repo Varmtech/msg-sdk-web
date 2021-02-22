@@ -216,7 +216,15 @@ declare enum UserAction {
 
 declare enum UserSearchOrder {
   FIRST_NAME,
-  LAST_NAME
+  LAST_NAME,
+  USERNAME
+}
+
+export enum UserSearchFilter {
+  BY_ALL,
+  BY_FIRST_NAME,
+  BY_LAST_NAME,
+  BY_USERNAME
 }
 
 declare enum MembersType {
@@ -246,7 +254,7 @@ declare class Query {
 }
 
 declare class UsersQueryBuilder extends QueryBuilder {
-  type: MembersType;
+  filter: UserSearchFilter;
   order: UserSearchOrder;
   searchQuery: string;
   i: number;
@@ -256,6 +264,11 @@ declare class UsersQueryBuilder extends QueryBuilder {
   query: (query: string) => this;
   orderByFirstname: () => this;
   orderByLastname: () => this;
+  orderByUsername: () => this;
+  filterByAll: () => this;
+  filterByFirstname: () => this;
+  filterByLastname: () => this;
+  filterByUsername: () => this;
   build: () => Promise<UsersQuery>;
 }
 
