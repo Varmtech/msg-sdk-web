@@ -591,6 +591,8 @@ interface Channel {
   updatedAt: Date | number;
   id: string;
   isMarkedAsUnread: boolean;
+  muted: boolean;
+  muteExpireTime: Date | number;
   delete: () => Promise<void>;
   hide: () => Promise<boolean>;
   unhide: () => Promise<boolean>;
@@ -608,6 +610,8 @@ interface Channel {
   markAllMessagesAsDelivered: () => void;
   markAllMessagesAsRead: () => void;
   markAsUnRead: () => Promise<Channel>;
+  mute: (muteExpireTime: number) => Promise<Channel>;
+  unmute: () => Promise<Channel>
 }
 
 interface GroupChannel extends Channel {
