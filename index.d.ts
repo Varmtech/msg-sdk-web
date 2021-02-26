@@ -538,6 +538,8 @@ declare class ChannelListener {
   onUpdateTotalUnreadCount: (channel: Channel, totalUnread: number, unreadChannels: number) => void;
   onHide: (channel: Channel) => void;
   onUnhide: (channel: Channel) => void;
+  onMute: (channel: Channel) => void;
+  onUnmute: (channel: Channel) => void;
   onMarkAsUnread: (channel: Channel) => void;
   onClearHistory: (channel: Channel) => void;
   onChangeRole: (channel: Channel, members: Member[]) => void;
