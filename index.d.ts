@@ -555,6 +555,7 @@ declare class ConnectionListener {
 
 declare class User {
   id: string;
+  identity: string;
   firstName: string | null;
   lastName: string | null;
   avatarUrl: string | null;
