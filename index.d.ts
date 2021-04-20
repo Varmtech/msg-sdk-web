@@ -2,7 +2,8 @@ export default Sceyt;
 
 declare class Sceyt {
   chatClient: ChatClient;
-  constructor(connectionTimeout?: number);
+  clientId: string;
+  constructor(apiUrl: string, clientId: string, connectionTimeout?: number);
   ConnectionListener(): ConnectionListener;
   ChannelListener(): ChannelListener;
   user: User;
@@ -10,9 +11,7 @@ declare class Sceyt {
   removeChannelListener: (uniqueListenerId: string) => void;
   addConnectionListener: (uniqueListenerId: string, connectionListener: ConnectionListener) => void;
   removeConnectionListener: (uniqueListenerId: string) => void;
-  connect: (jwt: string, resource: string) => Promise<string | {
-    error: null;
-  }>;
+  connect: (jwt: string) => Promise<void | SceytChatError>;
   disconnect: () => void;
 }
 
@@ -48,6 +47,11 @@ declare class ChatClient {
   BlockedUserListQueryBuilder(): BlockedUsersQueryBuilder;
   BlockedChannelListQuery(): BlockedQueryBuilder;
   HiddenQueryBuilder(): HiddenQueryBuilder;
+}
+
+interface SceytChatError extends Error{
+  message: string,
+  code: number
 }
 
 interface ICreatePublicChannel {
@@ -86,13 +90,8 @@ interface IMemberAction {
 }
 
 export declare type IUploadProgress = (progressPercent: number) => void;
-export declare type IUploadCompletion = (attachment: IAttachment, err: ISceytChatError) => void;
+export declare type IUploadCompletion = (attachment: IAttachment, err: SceytChatError) => void;
 export declare type IMessageResponse = (message: Message) => void;
-
-interface ISceytChatError {
-  code: number;
-  message: string;
-}
 
 interface IAttachment {
   fileSize?: number;
@@ -470,7 +469,6 @@ interface MessageQuery extends Query {
 }
 declare class MessageBuilder {
   from: User;
-  to: string;
   text: string;
   type: string;
   metadata: string;
@@ -569,7 +567,6 @@ interface Member extends User {
 
 interface Message {
   from: User;
-  to: string;
   text: string;
   date: Date | number;
   tid?: number;
