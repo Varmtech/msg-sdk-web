@@ -94,7 +94,7 @@ export declare type IUploadCompletion = (attachment: IAttachment, err: SceytChat
 export declare type IMessageResponse = (message: Message) => void;
 
 interface IAttachment {
-  fileSize?: number;
+  uploadedFileSize?: number;
   data?: string;
   metadata?: string;
   name?: string;
@@ -580,7 +580,7 @@ interface Message {
 }
 
 interface Attachment {
-  fileSize?: number;
+  uploadedFileSize?: number;
   name: string;
   type: string;
   metadata?: string;
