@@ -485,9 +485,6 @@ declare class MessageBuilder {
 
 declare class MessageByTypeQueryBuilder extends QueryBuilder {
   channelId: string;
-  queryDirection: MessageQueryDirection;
-  timestamp?: number;
-  msgId?: number | null;
   type: MessageQueryType;
   hasNext: boolean | null;
   msgType: string;
@@ -501,9 +498,6 @@ declare class MessageByTypeQueryBuilder extends QueryBuilder {
 
 interface MessageByTypeQuery extends Query {
   channelId: string;
-  queryDirection: MessageQueryDirection;
-  timestamp?: number;
-  msgId?: number;
   type: MessageQueryType;
   msgType?: string;
   reverseData: boolean;
