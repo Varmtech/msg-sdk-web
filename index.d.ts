@@ -71,7 +71,7 @@ interface ICreatePrivateChannel {
   label: string;
 }
 interface ICreateDirectChannel {
-  members: IMemberAction[];
+  userId: string;
   metadata: string;
   label: string;
 }
