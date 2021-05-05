@@ -3,7 +3,7 @@ export default Sceyt;
 declare class Sceyt {
   chatClient: ChatClient;
   clientId: string;
-  constructor(apiUrl: string, clientId: string, connectionTimeout?: number);
+  constructor(apiUrl: string, clientId: string, appId: string, connectionTimeout?: number);
   ConnectionListener(): ConnectionListener;
   ChannelListener(): ChannelListener;
   user: User;
