@@ -3,7 +3,7 @@ export default Sceyt;
 declare class Sceyt {
   chatClient: ChatClient;
   clientId: string;
-  constructor(apiUrl: string, clientId: string, appId: string, connectionTimeout?: number);
+  constructor(apiUrl: string, appId: string, clientId: string, connectionTimeout?: number);
   ConnectionListener(): ConnectionListener;
   ChannelListener(): ChannelListener;
   user: User;
@@ -269,7 +269,7 @@ declare class UsersQueryBuilder extends QueryBuilder {
   filterByFirstname: () => this;
   filterByLastname: () => this;
   filterByUsername: () => this;
-  build: () => Promise<UsersQuery>;
+  build: () => UsersQuery;
 }
 
 interface UsersQuery extends Query {
@@ -291,7 +291,7 @@ declare class BlockedUsersQueryBuilder extends QueryBuilder {
   query: (query: string) => this;
   orderByFirstname: () => this;
   orderByLastname: () => this;
-  build: () => Promise<BlockedUsersQuery>;
+  build: () => BlockedUsersQuery;
 }
 
 interface BlockedUsersQuery extends Query {
@@ -322,7 +322,7 @@ declare class ChannelQueryBuilder extends QueryBuilder {
   userEquals: (word: string) => this;
   userContains: (word: string) => this;
   labelEquals: (word: string) => this;
-  build: () => Promise<ChannelQuery>;
+  build: () => ChannelQuery;
 }
 
 interface ChannelQuery extends Query {
@@ -343,7 +343,7 @@ interface ChannelQuery extends Query {
 declare class HiddenQueryBuilder extends QueryBuilder {
   hasNext: boolean;
   limit: (count: number) => this;
-  build: () => Promise<HiddenQuery>;
+  build: () => HiddenQuery;
 }
 
 interface HiddenQuery extends Query {
@@ -372,7 +372,7 @@ declare class MembersQueryBuilder extends QueryBuilder {
   orderKeyByUsername: () => this;
   orderKeyByFirstname: () => this;
   orderKeyByLastname: () => this;
-  build: () => Promise<MembersQuery>;
+  build: () => MembersQuery;
 }
 
 interface MembersQuery extends Query {
@@ -408,7 +408,7 @@ declare class BlockedQueryBuilder extends QueryBuilder {
   hasNext: boolean;
   limit: (count: number) => this;
   constructor();
-  build: () => Promise<BlockedQuery>;
+  build: () => BlockedQuery;
 }
 
 interface BlockedQuery extends Query {
@@ -430,8 +430,9 @@ declare class MessageQueryBuilder extends QueryBuilder {
   messageId: (msgId: number) => this;
   timestamp: (timestamp: number) => this;
   update: () => this;
-  build: () => Promise<MessageQuery>;
+  build: () => MessageQuery;
 }
+
 interface MessageQuery extends Query {
   channelId: string;
   queryDirection: MessageQueryDirection;
@@ -493,7 +494,7 @@ declare class MessageByTypeQueryBuilder extends QueryBuilder {
   limit: (limit: number) => this;
   messageType: (type: string) => this;
   reverse: (isReverse: boolean) => void;
-  build: () => Promise<MessageByTypeQuery>;
+  build: () => MessageByTypeQuery;
 }
 
 interface MessageByTypeQuery extends Query {
