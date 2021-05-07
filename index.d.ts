@@ -55,7 +55,7 @@ interface SceytChatError extends Error{
 }
 
 interface ICreatePublicChannel {
-  members: IMemberAction[];
+  members: IMemberParams[];
   metadata: string;
   subject: string;
   avatarUrl: string;
@@ -64,7 +64,7 @@ interface ICreatePublicChannel {
 }
 
 interface ICreatePrivateChannel {
-  members: IMemberAction[];
+  members: IMemberParams[];
   metadata: string;
   subject: string;
   avatarUrl: string;
@@ -84,50 +84,24 @@ interface IChannelConfig {
   label: string;
 }
 
-interface IMemberAction {
+interface IMemberParams {
   role: string;
   id: string;
 }
 
 export declare type IUploadProgress = (progressPercent: number) => void;
-export declare type IUploadCompletion = (attachment: IAttachment, err: SceytChatError) => void;
-export declare type IMessageResponse = (message: Message) => void;
+export declare type IUploadCompletion = (attachment: Attachment, err: SceytChatError) => void;
 
-interface IAttachment {
+interface IAttachmentParams {
   uploadedFileSize?: number;
-  data?: string;
+  data?: File;
   metadata?: string;
   name?: string;
   type: string;
-  url: string;
+  url?: string;
   upload: boolean;
   progress?: IUploadProgress;
   completion?: IUploadCompletion;
-}
-
-interface IMessageQuery {
-  id: string;
-  type: MessageQueryType;
-  channelId: string;
-  search: IMessageQuerySearch | null;
-  messages: Message[];
-}
-
-interface IMessageQuerySearch {
-  count?: number | null;
-  direction?: MessageQueryDirection | null;
-  complete: boolean;
-  msgId?: number | null;
-  timestamp?: number | null;
-  messageType?: string | null;
-}
-
-interface IChannelListeners {
-  [key: string]: ChannelListener;
-}
-
-interface IConnectionListeners {
-  [key: string]: ConnectionListener;
 }
 
 interface IUserProfile {
@@ -142,30 +116,6 @@ declare enum ChannelSearchQuerySortOptions {
   CREATED_AT
 }
 
-declare enum ChannelOrder {
-  LAST_MESSAGE = 0,
-  CREATED_AT = 1
-}
-
-declare enum MarkChannel {
-  AS_READ,
-  AS_UNREAD,
-}
-
-declare enum ChannelSearchQueryKey {
-  SUBJECT,
-  URI,
-  LABEL,
-  USER
-}
-
-declare enum SearchQueryType {
-  NONE,
-  CONTAINS,
-  BEGINS_WITH,
-  EQUAL
-}
-
 declare enum ChannelType {
   NONE,
   PRIVATE,
@@ -176,9 +126,6 @@ declare enum ChannelType {
 declare enum PresenceStatus {
   Offline,
   Online,
-  Away,
-  Dnd,
-  Invisible
 }
 
 declare enum MessageUpdateStatus {
@@ -206,12 +153,6 @@ declare enum MessageQueryDirection {
 declare enum MessageQueryType {
   SEARCH,
   UPDATE
-}
-
-declare enum UserAction {
-  BLOCK,
-  UNBLOCK,
-  GET_BLOCK_LIST
 }
 
 declare enum UserSearchOrder {
@@ -473,14 +414,14 @@ declare class MessageBuilder {
   text: string;
   type: string;
   metadata: string;
-  attachments: IAttachment[];
+  attachments: IAttachmentParams[];
   tid: number;
   id: number;
   constructor(userId: string, channelId: string);
   setText: (text: string) => this;
   setMetadata: (metadata: string) => this;
   setType: (type: string) => this;
-  setAttachments: (attachments: IAttachment[]) => this;
+  setAttachments: (attachments: IAttachmentParams[]) => this;
   create: () => Message;
 }
 
@@ -604,15 +545,15 @@ interface Channel {
     cleared: boolean;
   }>;
   update: (channelConfig: IChannelConfig, ) => Promise<PublicChannel | PrivateChannel | DirectChannel>;
-  sendMessage: (message: Message, messageResponse: IMessageResponse, ) => Promise<unknown>;
-  reSendMessage: (message: Message, messageResponse: IMessageResponse, ) => Promise<unknown>;
+  sendMessage: (message: Message ) => Promise<Message>;
+  reSendMessage: (message: Message ) => Promise<Message>;
   createMessageBuilder: () => MessageBuilder;
   deleteMessage: (msgId: number, ) => Promise<Message>;
   editMessage: (msgId: number, body: string, ) => Promise<Message>;
-  startTyping: () => Promise<Message>;
-  stopTyping: () => Promise<Message>;
-  markAllMessagesAsDelivered: () => void;
-  markAllMessagesAsRead: () => void;
+  startTyping: () => void;
+  stopTyping: () => void;
+  markAllMessagesAsDelivered: () => Promise<void>;
+  markAllMessagesAsRead: () => Promise<void>;
   markAsUnRead: () => Promise<Channel>;
   mute: (muteExpireTime: number) => Promise<Channel>;
   unmute: () => Promise<Channel>
@@ -623,13 +564,13 @@ interface GroupChannel extends Channel {
   subject: string;
   avatarUrl: string;
   myRole: string;
-  addMembers: (members: IMemberAction[]) => Promise<Member[]>;
+  addMembers: (members: IMemberParams[]) => Promise<Member[]>;
   kickMembers: (memberIds: string[], ) => Promise<Member[]>;
   blockMembers: (memberIds: string[], ) => Promise<Member[]>;
   unBlockMembers: (memberIds?: string[]) => Promise<Member[]>;
   block: () => Promise<boolean>;
   changeOwner: (newOwnerId: string) => Promise<Member[]>;
-  changeMemberRole: (members: IMemberAction[], ) => Promise<Member[]>;
+  changeMemberRole: (members: IMemberParams[], ) => Promise<Member[]>;
   unblock: () => Promise<boolean>;
   leave: () => Promise<void>;
 }
