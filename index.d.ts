@@ -452,8 +452,9 @@ interface MessageByTypeQuery extends Query {
 }
 
 declare class ChannelListener {
-  onMessageEdited: (channel: Channel, message: Message) => void;
-  onMessageDeleted: (channel: Channel, message: Message) => void;
+  onMessageEdited: (channel: Channel, user: User, message: Message) => void;
+  onMessageDeleted: (channel: Channel, user: User, message: Message) => void;
+  onReactionUpdated: (channel: Channel, message: Message) => void;
   onMessage: (channel: Channel, message: Message) => void;
   onLeave: (channel: Channel, member: Member) => void;
   onBlock: (channel: Channel) => void;
@@ -570,8 +571,8 @@ interface Channel {
   markAsUnRead: () => Promise<Channel>;
   mute: (muteExpireTime: number) => Promise<Channel>;
   unmute: () => Promise<Channel>;
-  addReactionTo: (messageId: string, key: string, score: number, reason: string, enforceUnique: boolean) => Promise<Message>
-  deleteReactionFrom: (messageId: string, key: string) => Promise<Message>
+  addReaction: (messageId: string, key: string, score: number, reason: string, enforceUnique: boolean) => Promise<Message>
+  deleteReaction: (messageId: string, key: string) => Promise<Message>
 }
 
 interface GroupChannel extends Channel {
