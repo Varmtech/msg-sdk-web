@@ -416,7 +416,6 @@ declare class MessageBuilder {
   metadata: string;
   attachments: IAttachmentParams[];
   tid: number;
-  id: number;
   constructor(userId: string, channelId: string);
   setText: (text: string) => this;
   setMetadata: (metadata: string) => this;
@@ -507,7 +506,7 @@ interface Message {
   text: string;
   date: Date | number;
   tid?: number;
-  id: number;
+  id: string;
   type: string;
   status: MessageDeliveryStatus;
   isIncoming: boolean;
