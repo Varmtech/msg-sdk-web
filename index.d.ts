@@ -453,7 +453,7 @@ interface MessageByTypeQuery extends Query {
 declare class ChannelListener {
   onMessageEdited: (channel: Channel, user: User, message: Message) => void;
   onMessageDeleted: (channel: Channel, user: User, message: Message) => void;
-  onReactionUpdated: (channel: Channel, message: Message) => void;
+  onReactionUpdated: (channel: Channel, reactionEvent: ReactionEvent) => void;
   onMessage: (channel: Channel, message: Message) => void;
   onLeave: (channel: Channel, member: Member) => void;
   onBlock: (channel: Channel) => void;
@@ -512,10 +512,10 @@ interface Message {
   isIncoming: boolean;
   metadata?: string;
   chStatus: MessageUpdateStatus;
-  selfReactions?: Reaction[] | null;
-  lastReactions?: Reaction[] | null;
-  reactionScores?: { [key: string]: number } | null;
-  attachments?: Attachment[];
+  selfReactions: Reaction[];
+  lastReactions: Reaction[];
+  reactionScores: { [key: string]: number } | null;
+  attachments: Attachment[];
 }
 
 interface Attachment {
@@ -535,6 +535,14 @@ interface Reaction {
   createdAt: Date;
   messageId: number;
   user: User
+}
+
+
+interface ReactionEvent {
+  type: string,
+  from: User,
+  reaction: Reaction,
+  message: Message
 }
 
 interface Channel {
@@ -570,8 +578,8 @@ interface Channel {
   markAsUnRead: () => Promise<Channel>;
   mute: (muteExpireTime: number) => Promise<Channel>;
   unmute: () => Promise<Channel>;
-  addReaction: (messageId: string, key: string, score: number, reason: string, enforceUnique: boolean) => Promise<Message>
-  deleteReaction: (messageId: string, key: string) => Promise<Message>
+  addReaction: (messageId: string, key: string, score: number, reason: string, enforceUnique: boolean) => Promise<{ message: Message, reaction: Reaction }>
+  deleteReaction: (messageId: string, key: string) => Promise<{ message: Message, reaction: Reaction }>
 }
 
 interface GroupChannel extends Channel {
