@@ -339,6 +339,7 @@ declare class MessageBuilder {
   setMetadata: (metadata: string) => this;
   setType: (type: string) => this;
   setAttachments: (attachments: IAttachmentParams[]) => this;
+  setMentionUserIds: (userIds: string[]) => this;
   create: () => Message;
 }
 
@@ -423,7 +424,7 @@ interface Member extends User {
 interface Message {
   from: User;
   text: string;
-  date: Date | number;
+  createdAt: Date | number;
   tid?: number;
   id: string;
   type: string;
@@ -435,6 +436,8 @@ interface Message {
   lastReactions: Reaction[];
   reactionScores: { [key: string]: number } | null;
   attachments: Attachment[];
+  mentionedUsers: User[];
+  requestedMentionUserIds?: string[];
 }
 
 interface Attachment {
@@ -455,7 +458,6 @@ interface Reaction {
   messageId: number;
   user: User
 }
-
 
 interface ReactionEvent {
   type: string,
