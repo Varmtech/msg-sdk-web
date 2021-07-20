@@ -334,12 +334,17 @@ declare class MessageBuilder {
   metadata: string;
   attachments: IAttachmentParams[];
   tid: number;
+  parentMessageId: string;
+  replyInThread: boolean;
+
   constructor(userId: string, channelId: string);
   setText: (text: string) => this;
   setMetadata: (metadata: string) => this;
   setType: (type: string) => this;
   setAttachments: (attachments: IAttachmentParams[]) => this;
   setMentionUserIds: (userIds: string[]) => this;
+  setParentMessageId: (messageId: string) => this;
+  setReplyInThread: () => this;
   create: () => Message;
 }
 
@@ -438,6 +443,8 @@ interface Message {
   attachments: Attachment[];
   mentionedUsers: User[];
   requestedMentionUserIds?: string[];
+  parentMessage?: Message;
+  replyInThread?: boolean;
 }
 
 interface Attachment {
