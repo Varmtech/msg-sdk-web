@@ -288,6 +288,7 @@ declare class MessageQueryBuilder extends QueryBuilder {
   constructor(channelPartialId: string);
   messageId: (msgId: number) => this;
   timestamp: (timestamp: number) => this;
+  searchInThread: () => this;
   update: () => this;
   build: () => MessageQuery;
 }
@@ -430,6 +431,7 @@ interface Message {
   from: User;
   text: string;
   createdAt: Date | number;
+  updatedAt: Date | number;
   tid?: number;
   id: string;
   type: string;
