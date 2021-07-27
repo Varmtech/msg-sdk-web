@@ -288,6 +288,8 @@ declare class MessageQueryBuilder extends QueryBuilder {
   constructor(channelPartialId: string);
   messageId: (msgId: number) => this;
   timestamp: (timestamp: number) => this;
+  limit: (limit: number) => this;
+  reverse: (isReverse: boolean) => this;
   searchInThread: () => this;
   update: () => this;
   build: () => MessageQuery;
@@ -305,13 +307,29 @@ interface MessageQuery extends Query {
   lastMessageId?: number | null;
   firstMessageId?: number | null;
   hasPrev: boolean;
-  limit: (limit: number) => this;
-  reverse: (isReverse: boolean) => this;
+  limit: number;
+  reverse: boolean;
   next: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
+  nextMessageId: () => Promise<{
+    messages: Message[];
+    complete: boolean | undefined;
+  }>;
+  nextTimestamp: () => Promise<{
+    messages: Message[];
+    complete: boolean | undefined;
+  }>;
   prev: () => Promise<{
+    messages: Message[];
+    complete: boolean | undefined;
+  }>;
+  prevMessageId: () => Promise<{
+    messages: Message[];
+    complete: boolean | undefined;
+  }>;
+  prevTimestamp: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
