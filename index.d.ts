@@ -517,8 +517,8 @@ interface Channel {
   sendMessage: (message: Message ) => Promise<Message>;
   reSendMessage: (message: Message ) => Promise<Message>;
   createMessageBuilder: () => MessageBuilder;
-  deleteMessage: (msgId: number, ) => Promise<Message>;
-  editMessage: (msgId: number, body: string, ) => Promise<Message>;
+  deleteMessage: (msgId: string ) => Promise<Message>;
+  editMessage: (message) => Promise<Message>;
   startTyping: () => void;
   stopTyping: () => void;
   markAllMessagesAsDelivered: () => Promise<void>;
