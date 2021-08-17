@@ -453,10 +453,10 @@ interface Message {
   tid?: number;
   id: string;
   type: string;
-  status: 'None' | 'Server' | 'Delivered' | 'Read';
+  state: 'None' | 'Server' | 'Delivered' | 'Read';
   isIncoming: boolean;
   metadata?: string;
-  chStatus: 'Normal' | 'Edit' | 'Delete' | 'Composing' | 'Paused' | 'Reaction';
+  deliveryStatus: 'Normal' | 'Edit' | 'Delete' | 'Composing' | 'Paused' | 'Reaction';
   selfReactions: Reaction[];
   lastReactions: Reaction[];
   reactionScores: { [key: string]: number } | null;
