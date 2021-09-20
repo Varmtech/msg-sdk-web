@@ -47,7 +47,7 @@ declare class ChatClient {
   MemberListQueryBuilder(channelId: string): MemberListQueryBuilder;
   BlockedMemberListQueryBuilder(): BlockedMemberListQueryBuilder;
   MessageListQueryBuilder(channelId: string): MessageListQueryBuilder;
-  MessageListByTypeQueryBuilder(channelId: string): MessageListByTypeQueryBuilder;
+  MessageListByTypeQueryBuilder(channelId: string, type: string): MessageListByTypeQueryBuilder;
   UserListQueryBuilder(): UserListQueryBuilder;
   BlockedUserListQueryBuilder(): BlockedUserListQueryBuilder;
   BlockedChannelListQuery(): BlockedChannelListQueryBuilder;
