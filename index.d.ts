@@ -464,7 +464,7 @@ declare class User {
 }
 
 interface Member extends User {
-  role: string;
+  role: Role;
 }
 
 interface Message {
