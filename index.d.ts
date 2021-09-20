@@ -16,37 +16,42 @@ declare class Sceyt {
 }
 
 declare class ChatClient {
-  static instance: ChatClient;
-  private reconnectInterval;
-  private reconnectTimeout;
+  user: User;
+  connectStatus: string;
+  readonly settings: ISettings
+
+  connectionTimeout: number;
+  appId: string;
+  authToken: string;
+  clientId: string;
+  connectUrl: string;
+  enableAutoSendMessageStatusDelivered: boolean;
   channelListeners: ChannelListener;
   connectionListeners: ConnectionListener;
-  consecutiveFailures: number;
-  connectionStatus: string;
-  user: User;
-  constructor();
-  static getInstance(): ChatClient;
-  setOption: (key: string, value: number) => void;
-  getTotalUnreads: () => Promise<{ totalUnread: number, unreadChannels: number }>;
   updateToken: (jwt: string) => Promise<unknown>;
-  uploadFile: (file: { data: File, progress: ()=> number }) => void;
-  getRoles: () => Promise<string[]>;
-  setProfile: (profile: IUserProfile) => Promise<IUserProfile>;
+  setProfile: (profile: IUserProfile) => Promise<User>;
+  mute: (muteExpireTime: number) => Promise<ISettings>;
+  unmute: () => Promise<ISettings>;
   getUsers: (usersIds: string[]) => Promise<User[]>;
   blockUsers: (usersIds: string[]) => Promise<User[]>;
   unblockUsers: (usersIds: string[]) => Promise<User[]>;
+  uploadFile: (file: { data: File, progress: ()=> number }) => void;
+  getRoles: () => Promise<string[]>;
+  getChannel: (id: string) => Promise<Channel>;
+  getTotalUnreads: () => Promise<{ totalUnread: number, unreadChannels: number }>;
+  consecutiveFailures: number;
   PublicChannel: PublicChannel;
   PrivateChannel: PrivateChannel;
   DirectChannel: DirectChannel;
-  ChannelQueryBuilder(): ChannelQueryBuilder;
-  MembersQueryBuilder(channelId: string): MembersQueryBuilder;
-  BlockedMembersQueryBuilder(): BlockedMembersQueryBuilder;
-  MessageListQueryBuilder(channelId: string): MessageQueryBuilder;
-  MessageByTypeListQueryBuilder(channelId: string): MessageByTypeQueryBuilder;
-  UserListQueryBuilder(): UsersQueryBuilder;
-  BlockedUserListQueryBuilder(): BlockedUsersQueryBuilder;
-  BlockedChannelListQuery(): BlockedQueryBuilder;
-  HiddenQueryBuilder(): HiddenQueryBuilder;
+  ChannelListQueryBuilder(): ChannelListQueryBuilder;
+  MemberListQueryBuilder(channelId: string): MemberListQueryBuilder;
+  BlockedMemberListQueryBuilder(): BlockedMemberListQueryBuilder;
+  MessageListQueryBuilder(channelId: string): MessageListQueryBuilder;
+  MessageListByTypeQueryBuilder(channelId: string): MessageListByTypeQueryBuilder;
+  UserListQueryBuilder(): UserListQueryBuilder;
+  BlockedUserListQueryBuilder(): BlockedUserListQueryBuilder;
+  BlockedChannelListQuery(): BlockedChannelListQueryBuilder;
+  HiddenChannelListQueryBuilder(): HiddenChannelListQueryBuilder;
 }
 
 interface SceytChatError extends Error{
@@ -76,17 +81,35 @@ interface ICreateDirectChannel {
   label?: string;
 }
 
-interface IChannelConfig {
-  uri?: string;
-  subject?: string;
-  metadata?: string;
-  avatar?: string;
-  label?: string;
+export interface IPublicChannelConfig {
+  uri: string;
+  subject: string;
+  metadata: string;
+  avatar: string;
+  label: string;
+}
+
+export interface IPrivateChannelConfig {
+  subject: string;
+  metadata: string;
+  avatar: string;
+  label: string;
+}
+
+export interface IDirectChannelConfig {
+  metadata: string;
+  label: string;
 }
 
 interface IMemberParams {
   role: string;
   id: string;
+}
+
+export interface ISettings {
+  muted: boolean;
+  muteExpireDate: Date | null;
+  uploadSizeLimit: number
 }
 
 export declare type IUploadProgress = (progressPercent: number) => void;
@@ -115,19 +138,10 @@ declare class QueryBuilder {
   count: number;
 }
 
-declare class Query {
-  count: number;
-  hasNext: boolean;
-}
-
-declare class UsersQueryBuilder extends QueryBuilder {
-  filter: string;
-  order: string;
-  searchQuery: string;
-  i: number;
-  hasNext: boolean;
+declare class UserListQueryBuilder extends QueryBuilder {
   constructor();
   limit: (count: number) => this;
+  offset: (offset: number) => this;
   query: (query: string) => this;
   orderByFirstname: () => this;
   orderByLastname: () => this;
@@ -136,35 +150,33 @@ declare class UsersQueryBuilder extends QueryBuilder {
   filterByFirstname: () => this;
   filterByLastname: () => this;
   filterByUsername: () => this;
-  build: () => UsersQuery;
+  build: () => UsersListQuery;
 }
 
-interface UsersQuery extends Query {
-  order: string;
-  query: string;
-  index: number;
-  limit: (count: number) => this;
+interface UsersListQuery {
+  offset: number;
+  limit: number;
+  hasNext: boolean;
+  loading: boolean;
   loadNextPage: () => Promise<{ users: User[], hasNext: boolean }>;
 }
 
-declare class BlockedUsersQueryBuilder extends QueryBuilder {
-  i: number;
-  hasNext: boolean;
+declare class BlockedUserListQueryBuilder extends QueryBuilder {
   constructor();
   limit: (count: number) => this;
-  build: () => BlockedUsersQuery;
+  offset: (offset: number) => this;
+  build: () => BlockedUserListQuery;
 }
 
-interface BlockedUsersQuery extends Query {
-  index: number;
-  limit: (count: number) => this;
+interface BlockedUserListQuery {
+  offset: number;
+  limit: number;
+  hasNext: boolean;
+  loading: boolean;
   loadNextPage: () => Promise<{ users: User[], hasNext: boolean }>;
 }
 
-declare class ChannelQueryBuilder extends QueryBuilder {
-  ctype: string;
-  sort: string;
-  hasNext: boolean;
+declare class ChannelListQueryBuilder extends QueryBuilder {
   public: () => this;
   private: () => this;
   direct: () => this;
@@ -181,48 +193,45 @@ declare class ChannelQueryBuilder extends QueryBuilder {
   userEquals: (word: string) => this;
   userContains: (word: string) => this;
   labelEquals: (word: string) => this;
-  build: () => ChannelQuery;
+  build: () => ChannelListQuery;
 }
 
-interface ChannelQuery extends Query {
-  ctype: string;
-  fields: never[];
-  sort: string;
-  index: number;
-  totalUnread?: number;
-  limit: (limit: number) => this;
+interface ChannelListQuery {
+  readonly type: string;
+  hasNext: boolean;
+  loading: boolean;
+  offset: number;
+  limit: number;
+  readonly totalUnreadChannelsCount;
+  readonly totalUnreadMessagesCount;
+  readonly totalChannelsCount;
   loadNextPage: () => Promise<{
     channels: (PrivateChannel | PublicChannel | DirectChannel)[];
-    totalUnread: number;
-    unreadChannels: number;
+    totalUnreadChannelsCount: number;
+    totalUnreadMessagesCount;
     hasNext: boolean;
   }>;
 }
 
-declare class HiddenQueryBuilder extends QueryBuilder {
-  hasNext: boolean;
-  limit: (count: number) => this;
-  build: () => HiddenQuery;
+declare class HiddenChannelListQueryBuilder extends QueryBuilder {
+  limit: (limit: number) => this;
+  build: () => HiddenChannelListQuery;
 }
 
-interface HiddenQuery extends Query {
-  index: number;
-  limit: (count: number) => void;
+interface HiddenChannelListQuery {
+  limit: number;
+  hasNext: boolean;
+  readonly offset: number;
   loadNextPage: () => Promise<{
-    channels: Channel;
+    hiddenChannels: Channel[];
     hasNext: boolean;
   }>;
 }
 
-declare class MembersQueryBuilder extends QueryBuilder {
+declare class MemberListQueryBuilder extends QueryBuilder {
   channelId: string;
-  type: 'All' | 'Privileged';
-  order: 'Affilation' | 'Asc' | 'Desc';
-  key: 'Username' | 'Firstname' | 'Lastname';
-  i: number;
-  hasNext: boolean;
-  constructor(channelPartialId: string);
-  limit: (count: number) => this;
+  constructor(channelId: string);
+  limit: (limit: number) => this;
   privileged: () => this;
   all: () => this;
   byAscendingOrder: () => this;
@@ -231,132 +240,118 @@ declare class MembersQueryBuilder extends QueryBuilder {
   orderKeyByUsername: () => this;
   orderKeyByFirstname: () => this;
   orderKeyByLastname: () => this;
-  build: () => MembersQuery;
+  build: () => MemberListQuery;
 }
 
-interface MembersQuery extends Query {
+interface MemberListQuery {
   channelId: string;
-  type: 'All' | 'Privileged';
-  order: 'Affilation' | 'Asc' | 'Desc';
-  key: 'Username' | 'Firstname' | 'Lastname';
-  index: number;
-  limit: (limit: number) => void;
+  offset: number;
+  limit: number;
+  readonly queryType: 'All' | 'Privileged';
+  readonly orderType: 'Affilation' | 'Asc' | 'Desc';
+  readonly orderKey: 'Username' | 'Firstname' | 'Lastname';
   loadNextPage: () => Promise<{
     members: Member[];
     hasNext: boolean;
   }>;
 }
 
-declare class BlockedMembersQueryBuilder extends QueryBuilder {
+declare class BlockedMemberListQueryBuilder extends QueryBuilder {
   channelId: string;
   i: number;
   hasNext: boolean;
   constructor(channelPartialId: string);
   limit: (count: number) => this;
-  build: () => BlockedMembersQuery;
+  build: () => BlockedMemberListQuery;
 }
 
-interface BlockedMembersQuery extends Query {
+interface BlockedMemberListQuery {
   channelId: string;
   index: number;
   loadNextPage: () => Promise<Member[]>;
 }
 
-declare class BlockedQueryBuilder extends QueryBuilder {
-  i: number;
-  hasNext: boolean;
-  limit: (count: number) => this;
+declare class BlockedChannelListQueryBuilder extends QueryBuilder {
+  limit: (limit: number) => this;
   constructor();
-  build: () => BlockedQuery;
+  build: () => BlockedChannelListQuery;
 }
 
-interface BlockedQuery extends Query {
-  index: number;
-  channels?: Channel[];
-  limit: (limit: number) => void;
-  loadNextPage: () => Promise<never[] | this>;
+interface BlockedChannelListQuery {
+  readonly offset: number;
+  limit: number;
+  loadNextPage: () => Promise<{
+    blockedChannels: Channel[];
+    hasNext: boolean
+  }>;
 }
 
-declare class MessageQueryBuilder extends QueryBuilder {
+declare class MessageListQueryBuilder extends QueryBuilder {
   channelId: string;
-  queryDirection: string;
-  tmpStp?: number;
-  msgId?: number;
-  type: string;
-  hasNext: boolean | null;
-  msgType: string;
-  constructor(channelPartialId: string);
-  messageId: (msgId: number) => this;
-  timestamp: (timestamp: number) => this;
+  reversed: boolean;
+  searchThread: boolean;
+  constructor(channelId: string);
   limit: (limit: number) => this;
   reverse: (isReverse: boolean) => this;
   searchInThread: () => this;
-  update: () => this;
-  build: () => MessageQuery;
+  build: () => MessageListQuery;
 }
 
-interface MessageQuery extends Query {
+interface MessageListQuery{
   channelId: string;
-  queryDirection: string;
-  timestamp?: number;
-  messageId?: number;
-  type: string;
-  msgType?: string;
-  reverseData: boolean;
-  index: number;
-  lastMessageId?: number | null;
-  firstMessageId?: number | null;
-  hasPrev: boolean;
+  loading: boolean;
+  hasNext: boolean;
+  reversed: boolean;
   limit: number;
-  reverse: boolean;
-  next: () => Promise<{
+
+  loadNext: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  nextMessageId: () => Promise<{
+  loadNextMessageId: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  nextTimestamp: () => Promise<{
+  loadNextTimestamp: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  prev: () => Promise<{
+  loadPrev: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  prevMessageId: () => Promise<{
+  loadPrevMessageId: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  prevTimestamp: () => Promise<{
+  loadPrevTimestamp: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  near: () => Promise<{
+  loadNear: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  nearMessageId: (messageId: number) => Promise<{
+  loadNearMessageId: (messageId: number) => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  nearTimestamp: (timeStamp: number) => Promise<{
+  loadNearTimestamp: (timeStamp: number) => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
 }
+
 declare class MessageBuilder {
-  from: User;
+  tid: number;
   text: string;
   type: string;
   metadata: string;
   attachments: IAttachmentParams[];
-  tid: number;
   parentMessageId: string;
   replyInThread: boolean;
 
-  constructor(userId: string, channelId: string);
+  constructor(user: User, channelId: string);
   setText: (text: string) => this;
   setMetadata: (metadata: string) => this;
   setType: (type: string) => this;
@@ -367,67 +362,94 @@ declare class MessageBuilder {
   create: () => Message;
 }
 
-declare class MessageByTypeQueryBuilder extends QueryBuilder {
-  channelId: string;
+declare class AttachmentBuilder {
+  url: string;
   type: string;
-  hasNext: boolean | null;
-  msgType: string;
-  reverseData: boolean;
-  constructor(channelPartialId: string);
-  limit: (limit: number) => this;
-  messageType: (type: string) => this;
-  reverse: (isReverse: boolean) => void;
-  build: () => MessageByTypeQuery;
+  name?: string;
+  metadata?: string;
+  upload?: boolean;
+
+  constructor(url: string, type: string);
+
+  setName: (name: string) => this;
+  setMetadata: (metadata: string) => this;
+  setUpload: (upload: boolean) => this;
+  create: () => Attachment;
 }
 
-interface MessageByTypeQuery extends Query {
-  channelId: string;
-  type: string;
-  msgType?: string;
-  reverseData: boolean;
+
+declare class MemberBuilder {
+  constructor(id: string);
+
+  setRole: (roleName: string) => this;
+  create: () => Member;
+}
+
+declare class MessageListByTypeQueryBuilder extends QueryBuilder {
+  constructor(channelId: string, type: string);
   limit: (limit: number) => this;
   reverse: (isReverse: boolean) => void;
-  loadNextPage: () => Promise<{
+  build: () => MessageListByTypeQuery;
+}
+
+interface MessageListByTypeQuery {
+  channelId: string;
+  readonly type: string;
+  reverse: boolean;
+  loading: boolean;
+  hasNext: boolean;
+  limit: boolean;
+
+  loadNext: () => Promise<{
+    messages: Message[];
+    complete: boolean | undefined;
+  }>;
+  loadNextMessageId: (messageId: string) => Promise<{
+    messages: Message[];
+    complete: boolean | undefined;
+  }>;
+  loadNextTimestamp: (timestamp: number) => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
 }
 
 declare class ChannelListener {
-  onMessageEdited: (channel: Channel, user: User, message: Message) => void;
-  onMessageDeleted: (channel: Channel, user: User, message: Message) => void;
-  onReactionUpdated: (channel: Channel, reactionEvent: ReactionEvent) => void;
-  onMessage: (channel: Channel, message: Message) => void;
-  onLeave: (channel: Channel, member: Member) => void;
-  onBlock: (channel: Channel) => void;
-  onUnBlock: (channel: Channel) => void;
-  onJoin: (channel: Channel, member: Member) => void;
-  onCreate: (channel: Channel) => void;
-  onUpdate: (channel: Channel) => void;
-  onDelete: (channelId: string) => void;
-  onMemberAdded: (channel: Channel, members: Member[]) => void;
-  onMemberRemoved: (channel: Channel, members: Member[]) => void;
-  onMemberBlocked: (channel: Channel, members: Member[]) => void;
-  onMemberUnblocked: (channel: Channel, members: Member[]) => void;
-  onStartTyping: (channel: Channel, member: Member) => void;
-  onStopTyping: (channel: Channel, member: Member) => void;
+  onCreated: (channel: Channel) => void;
+  onUpdated: (channel: Channel) => void;
+  onDeleted: (channelId: string) => void;
   onUpdateDeliveryReceipt: (channel: Channel) => void;
   onUpdateReadReceipt: (channel: Channel) => void;
-  onUpdateTotalUnreadCount: (channel: Channel, totalUnread: number, unreadChannels: number) => void;
+  onUpdateTotalUnreadCount: (channel: Channel, totalUnreadChannelCount: number, totalUnreadMessageCount: number) => void;
   onHide: (channel: Channel) => void;
   onUnhide: (channel: Channel) => void;
-  onMute: (channel: Channel) => void;
-  onUnmute: (channel: Channel) => void;
-  onMarkAsUnread: (channel: Channel) => void;
+  onMuted: (channel: Channel) => void;
+  onUnmuted: (channel: Channel) => void;
+  onBlocked: (channel: GroupChannel) => void;
+  onUnBlocked: (channel: GroupChannel) => void;
   onClearHistory: (channel: Channel) => void;
-  onChangeRole: (channel: Channel, members: Member[]) => void;
-  onOwnerChange: (channel: Channel, newOwner: Member, oldOwner: Member) => void;
+  onMarkAsUnread: (channel: Channel) => void;
+  onOwnerChanged: (channel: GroupChannel, newOwner: Member, oldOwner: Member) => void;
+  onJoined: (channel: PublicChannel, member: Member) => void;
+  onMemberAdded: (channel: GroupChannel, members: Member[]) => void;
+  onLeft: (channel: GroupChannel, member: Member) => void;
+  onMemberKicked: (channel: GroupChannel, members: Member[]) => void;
+  onChangeMembersRole: (channel: GroupChannel, members: Member[]) => void;
+  onMemberBlocked: (channel: GroupChannel, members: Member[]) => void;
+  onMemberUnblocked: (channel: GroupChannel, members: Member[]) => void;
+  onMessage: (channel: Channel, message: Message) => void;
+  onMessageEdited: (channel: Channel, user: User, message: Message) => void;
+  onMessageDeleted: (channel: Channel, user: User, message: Message) => void;
+  onReactionAdded: (channel: Channel, user: User, message: Message, reaction: Reaction) => void;
+  onReactionDeleted: (channel: Channel, user: User, message: Message, reaction: Reaction) => void;
+  onUserStartTyping: (channel: Channel, user: User) => void;
+  onUserStopTyping: (channel: Channel, user: User) => void;
 }
 
 declare class ConnectionListener {
+  onChangeConnectStatus: (status: string) => void;
   onTokenWillExpire: (timeInterval: number) => void;
   onTokenExpired: () => void;
-  onChangeConnectStatus: (status: string) => void;
 }
 
 declare class User {
@@ -435,10 +457,10 @@ declare class User {
   firstName: string | null;
   lastName: string | null;
   avatarUrl: string | null;
-  presenceStatus: string;
-  state: string;
   metadata: string | null;
-  blocked: boolean
+  blocked: boolean;
+  presenceStatus: string;
+  activityState: string
 }
 
 interface Member extends User {
@@ -446,34 +468,36 @@ interface Member extends User {
 }
 
 interface Message {
-  from: User;
+  id: string;
+  tid?: number;
   text: string;
+  type: string;
+  metadata?: string;
   createdAt: Date | number;
   updatedAt: Date | number;
-  tid?: number;
-  id: string;
-  type: string;
-  state: 'None' | 'Server' | 'Delivered' | 'Read';
-  isIncoming: boolean;
-  metadata?: string;
-  deliveryStatus: 'Normal' | 'Edit' | 'Delete' | 'Composing' | 'Paused' | 'Reaction';
+  incoming: boolean;
+  user: User;
+  state: 'None' | 'Edited' | 'Deleted';
+  deliveryStatus:  'Pending' | 'Sent' | 'Delivered' | 'Read' | 'Failed';
+  attachments: Attachment[];
   selfReactions: Reaction[];
   lastReactions: Reaction[];
   reactionScores: { [key: string]: number } | null;
-  attachments: Attachment[];
   mentionedUsers: User[];
   requestedMentionUserIds?: string[];
-  parentMessage?: Message;
+  parent?: Message;
   replyInThread?: boolean;
+  replyCount?: number;
+
+  mentionUserIds: () => string[];
 }
 
 interface Attachment {
-  uploadedFileSize?: number;
-  name: string;
-  type: string;
-  metadata?: string;
   url: string;
-  upload: boolean
+  type: string;
+  name: string;
+  metadata?: string;
+  uploadedFileSize?: number;
 }
 
 interface Reaction {
@@ -481,9 +505,11 @@ interface Reaction {
   score: number;
   reason: string;
   updatedAt: Date;
-  createdAt: Date;
-  messageId: number;
   user: User
+}
+
+interface Role {
+  name: string
 }
 
 interface ReactionEvent {
@@ -494,69 +520,78 @@ interface ReactionEvent {
 }
 
 interface Channel {
-  lastMessage: Message | null;
-  lastRead: number;
-  lastDelivery: number;
-  label?: string;
-  metadata?: string;
-  unreadCount: number;
-  type: 'Public' | 'Private' | 'Direct';
+  id: string;
   createdAt: Date | number;
   updatedAt: Date | number;
-  id: string;
-  isMarkedAsUnread: boolean;
+  unreadCount: number;
+  lastReadMessageId: number;
+  lastDeliveredMessageId: number;
+  lastMessage: Message | null;
+  memberCount: number;
+  markedAsUnread: boolean;
   muted: boolean;
   muteExpireTime: Date | number;
+  type: 'Public' | 'Private' | 'Direct';
   delete: () => Promise<void>;
-  hide: () => Promise<boolean>;
-  unhide: () => Promise<boolean>;
   clearHistory: () => Promise<{
     cleared: boolean;
   }>;
-  update: (channelConfig: IChannelConfig, ) => Promise<PublicChannel | PrivateChannel | DirectChannel>;
-  sendMessage: (message: Message ) => Promise<Message>;
-  reSendMessage: (message: Message ) => Promise<Message>;
-  createMessageBuilder: () => MessageBuilder;
-  deleteMessage: (msgId: string ) => Promise<Message>;
-  editMessage: (message) => Promise<Message>;
-  startTyping: () => void;
-  stopTyping: () => void;
-  markAllMessagesAsDelivered: () => Promise<void>;
-  markAllMessagesAsRead: () => Promise<void>;
+  hide: () => Promise<boolean>;
+  unhide: () => Promise<boolean>;
   markAsUnRead: () => Promise<Channel>;
   mute: (muteExpireTime: number) => Promise<Channel>;
   unmute: () => Promise<Channel>;
+  markAllMessagesAsDelivered: () => Promise<void>;
+  markAllMessagesAsRead: () => Promise<void>;
+  startTyping: () => void;
+  stopTyping: () => void;
+  sendMessage: (message: Message) => Promise<Message>;
+  editMessage: (message: Message) => Promise<Message>;
+  reSendMessage: (failedMessage: Message) => Promise<Message>;
+  deleteMessageById: (messageId: string) => Promise<Message>;
+  deleteMessage: (message: Message) => Promise<Message>;
   addReaction: (messageId: string, key: string, score: number, reason: string, enforceUnique: boolean) => Promise<{ message: Message, reaction: Reaction }>
   deleteReaction: (messageId: string, key: string) => Promise<{ message: Message, reaction: Reaction }>
+  createMessageBuilder: () => MessageBuilder;
+  createAttachmentBuilder: (url: string, type: string) => AttachmentBuilder;
 }
 
 interface GroupChannel extends Channel {
-  membersCount: number;
   subject: string;
+  label?: string;
+  metadata?: string;
   avatarUrl?: string;
-  myRole: string;
-  addMembers: (members: IMemberParams[]) => Promise<Member[]>;
-  kickMembers: (memberIds: string[], ) => Promise<Member[]>;
-  blockMembers: (memberIds: string[], ) => Promise<Member[]>;
-  unBlockMembers: (memberIds?: string[]) => Promise<Member[]>;
-  block: () => Promise<boolean>;
+  myRole: Role;
+
+  createMemberBuilder: (id: string) => MemberBuilder;
+
   changeOwner: (newOwnerId: string) => Promise<Member[]>;
-  changeMemberRole: (members: IMemberParams[], ) => Promise<Member[]>;
-  unblock: () => Promise<boolean>;
+  changeMembersRole: (members: IMemberParams[]) => Promise<Member[]>;
+  addMembers: (members: IMemberParams[]) => Promise<Member[]>;
+  kickMembers: (memberIds: string[]) => Promise<Member[]>;
+  blockMembers: (memberIds: string[]) => Promise<Member[]>;
+  unBlockMembers: (memberIds: string[]) => Promise<Member[]>;
   leave: () => Promise<void>;
+  block: () => Promise<void>;
+  unblock: () => Promise<void>;
 }
 
 interface DirectChannel extends Channel {
   peer: Member;
+  label?: string;
+  metadata?: string;
+  update: (channelConfig: IDirectChannelConfig) => Promise<DirectChannel>;
   create(channelData: ICreateDirectChannel): Promise<DirectChannel>;
 }
 
 interface PrivateChannel extends GroupChannel {
+  update: (channelConfig: IPrivateChannelConfig) => Promise<PrivateChannel>;
   create(channelData: ICreatePrivateChannel): Promise<PrivateChannel>;
 }
 
 interface PublicChannel extends GroupChannel {
   uri: string;
+  update: (channelConfig: IPublicChannelConfig) => Promise<PublicChannel>;
   create(channelData: ICreatePublicChannel): Promise<PublicChannel>;
   join: () => Promise<Member>;
 }
