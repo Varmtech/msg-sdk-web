@@ -1,6 +1,6 @@
-export default Sceyt;
+export default SceytChat;
 
-declare class Sceyt {
+declare class SceytChat {
   chatClient: ChatClient;
   clientId: string;
   constructor(apiUrl: string, appId: string, clientId: string, connectionTimeout?: number);
@@ -236,7 +236,7 @@ declare class MemberListQueryBuilder extends QueryBuilder {
   all: () => this;
   byAscendingOrder: () => this;
   byDescendingOrder: () => this;
-  byAffilationOrder: () => this;
+  byAffiliationOrder: () => this;
   orderKeyByUsername: () => this;
   orderKeyByFirstname: () => this;
   orderKeyByLastname: () => this;
@@ -418,21 +418,21 @@ declare class ChannelListener {
   onCreated: (channel: Channel) => void;
   onUpdated: (channel: Channel) => void;
   onDeleted: (channelId: string) => void;
-  onUpdateDeliveryReceipt: (channel: Channel) => void;
-  onUpdateReadReceipt: (channel: Channel) => void;
-  onUpdateTotalUnreadCount: (channel: Channel, totalUnreadChannelCount: number, totalUnreadMessageCount: number) => void;
+  onDeliveryReceiptReceived: (channel: Channel) => void;
+  onReadReceiptReceived: (channel: Channel) => void;
+  onTotalUnreadCountUpdated: (channel: Channel, totalUnreadChannelCount: number, totalUnreadMessageCount: number) => void;
   onHidden: (channel: Channel) => void;
   onShown: (channel: Channel) => void;
   onMuted: (channel: Channel) => void;
   onUnmuted: (channel: Channel) => void;
   onBlocked: (channel: GroupChannel) => void;
-  onUnBlocked: (channel: GroupChannel) => void;
+  onUnblocked: (channel: GroupChannel) => void;
   onHistoryCleared: (channel: Channel) => void;
   onMarkedAsUnread: (channel: Channel) => void;
   onOwnerChanged: (channel: GroupChannel, newOwner: Member, oldOwner: Member) => void;
-  onJoined: (channel: PublicChannel, member: Member) => void;
+  onMemberJoined: (channel: PublicChannel, member: Member) => void;
   onMembersAdded: (channel: GroupChannel, members: Member[]) => void;
-  onLeft: (channel: GroupChannel, member: Member) => void;
+  onMemberLeft: (channel: GroupChannel, member: Member) => void;
   onMembersKicked: (channel: GroupChannel, members: Member[]) => void;
   onMembersRoleChanged: (channel: GroupChannel, members: Member[]) => void;
   onMembersBlocked: (channel: GroupChannel, members: Member[]) => void;
@@ -442,8 +442,8 @@ declare class ChannelListener {
   onMessageDeleted: (channel: Channel, user: User, message: Message) => void;
   onReactionAdded: (channel: Channel, user: User, message: Message, reaction: Reaction) => void;
   onReactionDeleted: (channel: Channel, user: User, message: Message, reaction: Reaction) => void;
-  onUserStartTyping: (channel: Channel, user: User) => void;
-  onUserStopTyping: (channel: Channel, user: User) => void;
+  onMemberStartedTyping: (channel: Channel, member: Member) => void;
+  onMemberStoppedTyping: (channel: Channel, member: Member) => void;
 }
 
 declare class ConnectionListener {
