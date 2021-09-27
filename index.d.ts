@@ -316,15 +316,15 @@ interface MessageListQuery{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  loadPrev: () => Promise<{
+  loadPrevious: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  loadPrevMessageId: () => Promise<{
+  loadPreviousMessageId: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
-  loadPrevTimestamp: () => Promise<{
+  loadPreviousTimestamp: () => Promise<{
     messages: Message[];
     complete: boolean | undefined;
   }>;
