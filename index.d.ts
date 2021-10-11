@@ -343,16 +343,8 @@ interface MessageListQuery{
 }
 
 declare class MessageBuilder {
-  tid: number;
-  text: string;
-  type: string;
-  metadata: string;
-  attachments: IAttachmentParams[];
-  parentMessageId: string;
-  replyInThread: boolean;
-
   constructor(user: User, channelId: string);
-  setText: (text: string) => this;
+  setBody: (text: string) => this;
   setMetadata: (metadata: string) => this;
   setType: (type: string) => this;
   setAttachments: (attachments: IAttachmentParams[]) => this;
@@ -447,7 +439,7 @@ declare class ChannelListener {
 }
 
 declare class ConnectionListener {
-  onChangeConnectStatus: (status: string) => void;
+  onConnectionStatusChanged: (status: string) => void;
   onTokenWillExpire: (timeInterval: number) => void;
   onTokenExpired: () => void;
 }
