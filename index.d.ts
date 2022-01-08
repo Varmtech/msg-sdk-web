@@ -43,6 +43,8 @@ declare class ChatClient {
   PublicChannel: PublicChannel;
   PrivateChannel: PrivateChannel;
   DirectChannel: DirectChannel;
+  authState: 'NOT_AUTHENTICATED' | 'HTTP_AUTH_FAILED' | 'SOCKET_AUTH_FAILED' | 'HTTP_AUTHENTICATING'
+      | 'SOCKET_AUTHENTICATING' | 'HTTP_AUTHENTICATED' | 'SOCKET_AUTHENTICATED' | 'AUTHENTICATED' | 'CONNECTION_TIMEOUT'
   ChannelListQueryBuilder(): ChannelListQueryBuilder;
   MemberListQueryBuilder(channelId: string): MemberListQueryBuilder;
   BlockedMemberListQueryBuilder(): BlockedMemberListQueryBuilder;
@@ -347,6 +349,8 @@ declare class MessageBuilder {
   setBody: (text: string) => this;
   setMetadata: (metadata: string) => this;
   setType: (type: string) => this;
+  setTransient: (isTransient: boolean) => this;
+  setSilent: (isSilent: boolean) => this;
   setAttachments: (attachments: IAttachmentParams[]) => this;
   setMentionUserIds: (userIds: string[]) => this;
   setParentMessageId: (messageId: string) => this;
@@ -480,6 +484,8 @@ interface Message {
   parent?: Message;
   replyInThread?: boolean;
   replyCount?: number;
+  transient: boolean;
+  silent: boolean;
 
   mentionUserIds: () => string[];
 }
