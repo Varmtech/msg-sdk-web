@@ -539,8 +539,8 @@ interface Channel {
   markAsUnRead: () => Promise<Channel>;
   mute: (muteExpireTime: number) => Promise<Channel>;
   unmute: () => Promise<Channel>;
-  markAllMessagesAsDelivered: () => Promise<void>;
-  markAllMessagesAsRead: () => Promise<void>;
+  markMessagesAsDelivered: (messageIds: string[]) => Promise<void>;
+  markMessagesAsRead: (messageIds: string[]) => Promise<void>;
   startTyping: () => void;
   stopTyping: () => void;
   sendMessage: (message: Message) => Promise<Message>;
