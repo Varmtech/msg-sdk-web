@@ -44,7 +44,8 @@ declare class ChatClient {
   PrivateChannel: PrivateChannel;
   DirectChannel: DirectChannel;
   authState: 'NOT_AUTHENTICATED' | 'HTTP_AUTH_FAILED' | 'SOCKET_AUTH_FAILED' | 'HTTP_AUTHENTICATING'
-      | 'SOCKET_AUTHENTICATING' | 'HTTP_AUTHENTICATED' | 'SOCKET_AUTHENTICATED' | 'AUTHENTICATED' | 'CONNECTION_TIMEOUT'
+      | 'SOCKET_AUTHENTICATING' | 'HTTP_AUTHENTICATED' | 'SOCKET_AUTHENTICATED' | 'AUTHENTICATED' | 'CONNECTION_TIMEOUT';
+  updatePresence(presenceState: string): Promise<void>;
   ChannelListQueryBuilder(): ChannelListQueryBuilder;
   MemberListQueryBuilder(channelId: string): MemberListQueryBuilder;
   BlockedMemberListQueryBuilder(): BlockedMemberListQueryBuilder;
