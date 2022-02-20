@@ -51,6 +51,7 @@ declare class ChatClient {
   BlockedMemberListQueryBuilder(): BlockedMemberListQueryBuilder;
   MessageListQueryBuilder(channelId: string): MessageListQueryBuilder;
   MessageListByTypeQueryBuilder(channelId: string, type: string): MessageListByTypeQueryBuilder;
+  MessageMarkerListQueryBuilder(channelId: string, messageId: string, markers: string[]): MessageMarkerListQueryBuilder;
   UserListQueryBuilder(): UserListQueryBuilder;
   BlockedUserListQueryBuilder(): BlockedUserListQueryBuilder;
   BlockedChannelListQuery(): BlockedChannelListQueryBuilder;
@@ -395,7 +396,7 @@ interface MessageListByTypeQuery {
   reverse: boolean;
   loading: boolean;
   hasNext: boolean;
-  limit: boolean;
+  limit: number;
 
   loadNext: () => Promise<{
     messages: Message[];
@@ -409,6 +410,25 @@ interface MessageListByTypeQuery {
     messages: Message[];
     complete: boolean | undefined;
   }>;
+}
+
+declare class MessageMarkerListQueryBuilder extends QueryBuilder {
+  constructor(channelId: string, messageId: string, markers: string[]);
+  limit: (limit: number) => this;
+  reverse: (isReverse: boolean) => void;
+  build: () => MessageMarkerListQuery;
+}
+
+interface MessageMarkerListQuery {
+  readonly channelId: string;
+  readonly messageId: string;
+  readonly markers: string[];
+  reverse: boolean;
+  loading: boolean;
+  hasNext: boolean;
+  limit: number;
+
+  loadNext: () => Promise<{ markers: MessageMarker[], hasNext: boolean }>;
 }
 
 declare class ChannelListener {
@@ -593,4 +613,11 @@ interface PublicChannel extends GroupChannel {
   update: (channelConfig: IPublicChannelConfig) => Promise<PublicChannel>;
   create(channelData: ICreatePublicChannel): Promise<PublicChannel>;
   join: () => Promise<Member>;
+}
+
+interface MessageMarker {
+  messageId: string;
+  user: User;
+  name: string;
+  createAt: Date
 }
