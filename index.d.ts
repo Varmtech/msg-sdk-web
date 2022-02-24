@@ -45,6 +45,7 @@ declare class ChatClient {
   DirectChannel: DirectChannel;
   authState: 'NOT_AUTHENTICATED' | 'HTTP_AUTH_FAILED' | 'SOCKET_AUTH_FAILED' | 'HTTP_AUTHENTICATING'
       | 'SOCKET_AUTHENTICATING' | 'HTTP_AUTHENTICATED' | 'SOCKET_AUTHENTICATED' | 'AUTHENTICATED' | 'CONNECTION_TIMEOUT';
+  channelReport(report: string, channelId: string, messageIds?: string[]): Promise<void>;
   updatePresence(presenceState: string): Promise<void>;
   ChannelListQueryBuilder(): ChannelListQueryBuilder;
   MemberListQueryBuilder(channelId: string): MemberListQueryBuilder;
@@ -435,8 +436,7 @@ declare class ChannelListener {
   onCreated: (channel: Channel) => void;
   onUpdated: (channel: Channel) => void;
   onDeleted: (channelId: string) => void;
-  onDeliveryReceiptReceived: (channel: Channel) => void;
-  onReadReceiptReceived: (channel: Channel) => void;
+  onReceivedMessageListMarker: (channelId: string, markers: MessageMarker[]) => void;
   onTotalUnreadCountUpdated: (channel: Channel, totalUnreadChannelCount: number, totalUnreadMessageCount: number) => void;
   onHidden: (channel: Channel) => void;
   onShown: (channel: Channel) => void;
@@ -496,6 +496,7 @@ interface Message {
   user: User;
   state: 'None' | 'Edited' | 'Deleted';
   deliveryStatus:  'Pending' | 'Sent' | 'Delivered' | 'Read' | 'Failed';
+  selfMarkers:  string[];
   attachments: Attachment[];
   selfReactions: Reaction[];
   lastReactions: Reaction[];
