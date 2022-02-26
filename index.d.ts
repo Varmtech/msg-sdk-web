@@ -436,7 +436,7 @@ declare class ChannelListener {
   onCreated: (channel: Channel) => void;
   onUpdated: (channel: Channel) => void;
   onDeleted: (channelId: string) => void;
-  onReceivedMessageListMarker: (channelId: string, markers: MessageMarker[]) => void;
+  onReceivedMessageListMarker: (channelId: string, markers: MessageListMarker[]) => void;
   onTotalUnreadCountUpdated: (channel: Channel, totalUnreadChannelCount: number, totalUnreadMessageCount: number) => void;
   onHidden: (channel: Channel) => void;
   onShown: (channel: Channel) => void;
@@ -618,6 +618,13 @@ interface PublicChannel extends GroupChannel {
 
 interface MessageMarker {
   messageId: string;
+  user: User;
+  name: string;
+  createAt: Date
+}
+
+interface MessageListMarker {
+  messageIds: string[];
   user: User;
   name: string;
   createAt: Date
