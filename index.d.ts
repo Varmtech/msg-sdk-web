@@ -45,7 +45,7 @@ declare class ChatClient {
   DirectChannel: DirectChannel;
   authState: 'NOT_AUTHENTICATED' | 'HTTP_AUTH_FAILED' | 'SOCKET_AUTH_FAILED' | 'HTTP_AUTHENTICATING'
       | 'SOCKET_AUTHENTICATING' | 'HTTP_AUTHENTICATED' | 'SOCKET_AUTHENTICATED' | 'AUTHENTICATED' | 'CONNECTION_TIMEOUT';
-  channelReport(report: string, channelId: string, messageIds?: string[]): Promise<void>;
+  channelReport(report: string, channelId: string, description?: string, messageIds?: string[]): Promise<void>;
   updatePresence(presenceState: string): Promise<void>;
   ChannelListQueryBuilder(): ChannelListQueryBuilder;
   MemberListQueryBuilder(channelId: string): MemberListQueryBuilder;
