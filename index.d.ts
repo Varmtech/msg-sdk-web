@@ -47,6 +47,7 @@ declare class ChatClient {
       | 'SOCKET_AUTHENTICATING' | 'HTTP_AUTHENTICATED' | 'SOCKET_AUTHENTICATED' | 'AUTHENTICATED' | 'CONNECTION_TIMEOUT';
   channelReport(report: string, channelId: string, description?: string, messageIds?: string[]): Promise<void>;
   messageReport(report: string, channelId: string, messageIds: string[], description?: string): Promise<void>;
+  userReport(report: string, userId: string, messageIds?: string[], description?: string): Promise<void>;
   updatePresence(presenceState: string): Promise<void>;
   ChannelListQueryBuilder(): ChannelListQueryBuilder;
   MemberListQueryBuilder(channelId: string): MemberListQueryBuilder;
