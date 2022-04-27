@@ -478,7 +478,11 @@ declare class User {
   avatarUrl: string | null;
   metadata: string | null;
   blocked: boolean;
-  presenceStatus: string;
+  presence: {
+    state: string,
+    status: string,
+    lastActiveAt: Date
+  };
   activityState: string
 }
 
