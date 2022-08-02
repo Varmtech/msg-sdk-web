@@ -48,7 +48,7 @@ declare class ChatClient {
   channelReport(report: string, channelId: string, description?: string, messageIds?: string[]): Promise<void>;
   messageReport(report: string, channelId: string, messageIds: string[], description?: string): Promise<void>;
   userReport(report: string, userId: string, messageIds?: string[], description?: string): Promise<void>;
-  updatePresence(state: 'Offline' | 'Online' | 'Invisible' | 'Away' | 'DND', status: string): Promise<void>;
+  setPresence(state: 'Offline' | 'Online' | 'Invisible' | 'Away' | 'DND', status: string): Promise<void>;
   ChannelListQueryBuilder(): ChannelListQueryBuilder;
   MemberListQueryBuilder(channelId: string): MemberListQueryBuilder;
   BlockedMemberListQueryBuilder(): BlockedMemberListQueryBuilder;
