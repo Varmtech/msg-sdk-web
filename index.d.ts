@@ -28,6 +28,7 @@ declare class ChatClient {
   enableAutoSendMessageStatusDelivered: boolean;
   channelListeners: ChannelListener;
   connectionListeners: ConnectionListener;
+  setLogLevel: (level: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent') => void;
   updateToken: (jwt: string) => Promise<unknown>;
   setProfile: (profile: IUserProfile) => Promise<User>;
   mute: (muteExpireTime: number) => Promise<ISettings>;
@@ -48,7 +49,7 @@ declare class ChatClient {
   channelReport(report: string, channelId: string, description?: string, messageIds?: string[]): Promise<void>;
   messageReport(report: string, channelId: string, messageIds: string[], description?: string): Promise<void>;
   userReport(report: string, userId: string, messageIds?: string[], description?: string): Promise<void>;
-  setPresence(state: 'Offline' | 'Online' | 'Invisible' | 'Away' | 'DND', status: string): Promise<void>;
+  setPresence(state: 'Offline' | 'Online' | 'Invisible' | 'Away' | 'DND', status?: string): Promise<void>;
   ChannelListQueryBuilder(): ChannelListQueryBuilder;
   MemberListQueryBuilder(channelId: string): MemberListQueryBuilder;
   BlockedMemberListQueryBuilder(): BlockedMemberListQueryBuilder;
@@ -439,7 +440,7 @@ declare class ChannelListener {
   onUpdated: (channel: Channel) => void;
   onDeleted: (channelId: string) => void;
   onReceivedMessageListMarker: (channelId: string, markers: MessageListMarker[]) => void;
-  onTotalUnreadCountUpdated: (channel: Channel, totalUnreadChannelCount: number, totalUnreadMessageCount: number) => void;
+  onTotalUnreadCountUpdated: (channel: Channel, totalUnreadChannelCount: number, totalUnreadMessageCount: number, channelUnreadMessagesCount: number) => void;
   onHidden: (channel: Channel) => void;
   onShown: (channel: Channel) => void;
   onMuted: (channel: Channel) => void;
@@ -565,6 +566,7 @@ interface Channel {
   hide: () => Promise<boolean>;
   unhide: () => Promise<boolean>;
   markAsUnRead: () => Promise<Channel>;
+  markAsRead: () => Promise<Channel>;
   mute: (muteExpireTime: number) => Promise<Channel>;
   unmute: () => Promise<Channel>;
   markMessagesAsDelivered: (messageIds: string[]) => Promise<void>;
