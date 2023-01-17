@@ -580,6 +580,7 @@ interface Message {
 
 interface Attachment {
   id: string;
+  createdAt: Date;
   url: string;
   type: string;
   name: string;
