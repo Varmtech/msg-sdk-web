@@ -36,7 +36,7 @@ declare class ChatClient {
   getUsers: (usersIds: string[]) => Promise<User[]>;
   blockUsers: (usersIds: string[]) => Promise<User[]>;
   unblockUsers: (usersIds: string[]) => Promise<User[]>;
-  uploadFile: (file: { data: File, progress?: () => number }) => Promise<string>;
+  uploadFile: (file: { data: File, progress?: (percent: number) => void }) => Promise<string>;
   getRoles: () => Promise<string[]>;
   getChannel: (id: string) => Promise<Channel>;
   getTotalUnreads: () => Promise<{ totalUnread: number, unreadChannels: number }>;
