@@ -507,6 +507,7 @@ declare class ChannelListener {
   onBlocked: (channel: GroupChannel) => void;
   onUnblocked: (channel: GroupChannel) => void;
   onHistoryCleared: (channel: Channel) => void;
+  onDeletedAllMessages: (channel: Channel) => void;
   onMarkedAsUnread: (channel: Channel) => void;
   onOwnerChanged: (channel: GroupChannel, newOwner: Member, oldOwner: Member) => void;
   onMemberJoined: (channel: PublicChannel, member: Member) => void;
@@ -615,7 +616,7 @@ interface Channel {
   muteExpireTime: Date | number;
   type: 'Public' | 'Private' | 'Direct';
   delete: () => Promise<void>;
-  clearHistory: () => Promise<void>;
+  deleteAllMessages: (deleteForMe?: boolean) => Promise<void>;
   hide: () => Promise<void>;
   unhide: () => Promise<void>;
   markAsUnRead: () => Promise<Channel>;
