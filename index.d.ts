@@ -544,7 +544,7 @@ declare class User {
     status: string,
     lastActiveAt: Date
   };
-  activityState: string
+  activityState: 'Active' | 'Inactive' | "Deleted"
 }
 
 interface Member extends User {
