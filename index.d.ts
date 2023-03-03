@@ -613,7 +613,9 @@ interface Channel {
   id: string;
   createdAt: Date | number;
   updatedAt: Date | number;
-  unreadCount: number;
+  unreadMessageCount: number;
+  unreadMentionsCount: number;
+  unreadReactionsCount: number;
   lastReadMessageId: number;
   lastDeliveredMessageId: number;
   lastMessage: Message | null;
