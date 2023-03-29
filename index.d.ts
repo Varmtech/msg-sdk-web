@@ -56,6 +56,7 @@ declare class ChatClient {
   MessageListQueryBuilder(channelId: string): MessageListQueryBuilder;
   MessageListByTypeQueryBuilder(channelId: string, type: string): MessageListByTypeQueryBuilder;
   MessageMarkerListQueryBuilder(channelId: string, messageId: string, markers: string[]): MessageMarkerListQueryBuilder;
+  ReactionListQueryBuilder( messageId: string): ReactionListQueryBuilder;
   UserListQueryBuilder(): UserListQueryBuilder;
   BlockedUserListQueryBuilder(): BlockedUserListQueryBuilder;
   BlockedChannelListQuery(): BlockedChannelListQueryBuilder;
@@ -493,6 +494,23 @@ interface MessageMarkerListQuery {
   limit: number;
 
   loadNext: () => Promise<{ markers: MessageMarker[], hasNext: boolean }>;
+}
+
+declare class ReactionListQueryBuilder extends QueryBuilder {
+  constructor( messageId: string);
+  limit: (limit: number) => this;
+  setKey: (key: string) => this;
+  build: () => ReactionListQuery;
+}
+
+interface ReactionListQuery {
+  readonly messageId: string;
+  readonly reactionKey: boolean;
+  readonly hasNext: boolean;
+  limit: number;
+
+  loadNext: () => Promise<{ reactions: Reaction[], hasNext: boolean }>;
+  loadNextReactionId: (reactionId: string) => Promise<{ reactions: Reaction[], hasNext: boolean }>;
 }
 
 declare class ChannelListener {
