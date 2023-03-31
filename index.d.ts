@@ -663,6 +663,8 @@ interface Channel {
   deleteReaction: (messageId: string, key: string) => Promise<{ message: Message, reaction: Reaction }>
   createMessageBuilder: () => MessageBuilder;
   createAttachmentBuilder: (url: string, type: string) => AttachmentBuilder;
+  createThread: (messageId: string) => Channel;
+  getMessagesById: (messageIds: string[]) => Message[];
 }
 
 interface GroupChannel extends Channel {
