@@ -41,10 +41,9 @@ declare class SceytChat {
   getAllContacts: () => Promise<Contact[]>;
   addContactDiscoveries: (contactDiscoveries: ContactDiscovery[]) => Promise<ContactDiscovery[]>;
   deleteAllContactDiscoveries: () => Promise<void>;
+  sendDirectMessage: (message: Message, userId: string) => Promise<Message>;
 
-  PublicChannel(): PublicChannel;
-  PrivateChannel(): PrivateChannel;
-  DirectChannel(): DirectChannel;
+  Channel(): Channel
   ConnectionListener(): ConnectionListener;
   ChannelListener(): ChannelListener;
   ChannelListQueryBuilder(): ChannelListQueryBuilder;
@@ -72,24 +71,24 @@ declare class ChannelListener {
   onUpdated: (channel: Channel) => void;
   onDeleted: (channelId: string) => void;
   onReceivedMessageListMarker: (channelId: string, markers: MessageListMarker[]) => void;
-  onTotalUnreadCountUpdated: (channel: Channel, totalUnreadChannelCount: number, totalUnreadMessageCount: number, channelUnreadMessagesCount: number) => void;
+  onTotalUnreadCountUpdated: (channel: Channel, totalUnreadChannelCount: number, totalUnreadMessageCount: number, channelUnreadMessageCount: number, channelUnreadMentionCount, channelUnreadReactionCount) => void;
   onHidden: (channel: Channel) => void;
   onShown: (channel: Channel) => void;
   onMuted: (channel: Channel) => void;
   onUnmuted: (channel: Channel) => void;
-  onBlocked: (channel: GroupChannel) => void;
-  onUnblocked: (channel: GroupChannel) => void;
+  onBlocked: (channel: Channel) => void;
+  onUnblocked: (channel: Channel) => void;
   onHistoryCleared: (channel: Channel) => void;
   onDeletedAllMessages: (channel: Channel) => void;
   onMarkedAsUnread: (channel: Channel) => void;
-  onOwnerChanged: (channel: GroupChannel, newOwner: Member, oldOwner: Member) => void;
-  onMemberJoined: (channel: PublicChannel, member: Member) => void;
-  onMembersAdded: (channel: GroupChannel, members: Member[]) => void;
-  onMemberLeft: (channel: GroupChannel, member: Member) => void;
-  onMembersKicked: (channel: GroupChannel, members: Member[]) => void;
-  onMembersRoleChanged: (channel: GroupChannel, members: Member[]) => void;
-  onMembersBlocked: (channel: GroupChannel, members: Member[]) => void;
-  onMembersUnblocked: (channel: GroupChannel, members: Member[]) => void;
+  onOwnerChanged: (channel: Channel, newOwner: Member, oldOwner: Member) => void;
+  onMemberJoined: (channel: Channel, member: Member) => void;
+  onMembersAdded: (channel: Channel, members: Member[]) => void;
+  onMemberLeft: (channel: Channel, member: Member) => void;
+  onMembersKicked: (channel: Channel, members: Member[]) => void;
+  onMembersRoleChanged: (channel: Channel, members: Member[]) => void;
+  onMembersBlocked: (channel: Channel, members: Member[]) => void;
+  onMembersUnblocked: (channel: Channel, members: Member[]) => void;
   onMessage: (channel: Channel, message: Message) => void;
   onMessageEdited: (channel: Channel, user: User, message: Message) => void;
   onMessageDeleted: (channel: Channel, user: User, message: Message) => void;
@@ -125,19 +124,35 @@ declare interface Contact {
 
 interface Channel {
   id: string;
+  parentId?: string;
+  uri?: string;
+  type: string;
+  subject?: string;
+  avatarUrl?: string;
+  metadata?: string;
   createdAt: Date;
-  updatedAt: Date | null;
-  unreadMessageCount: number;
-  unreadMentionsCount: number;
-  unreadReactionsCount: number;
-  lastReadMessageId: number;
-  lastDeliveredMessageId: number;
-  lastMessage: Message | null;
+  updatedAt: Date | null
+  messagesClearedAt: Date | null
   memberCount: number;
-  markedAsUnread: boolean;
+  messageCount: number;
+  createdBy?: User;
+  role: string;
+  unread: boolean;
+  newMessageCount: number;
+  newMentionCount: number;
+  newReactionCount: number;
+  hidden: boolean
+  archived: boolean
   muted: boolean;
-  muteExpireDate: Date | null;
-  type: 'Public' | 'Private' | 'Direct';
+  mutedTill: Date | null;
+  pinnedAt: Date | null;
+  lastReceivedMsgId: string;
+  lastDisplayedMsgId: string;
+  messageRetentionPeriod?: number
+  lastMessage: Message | null;
+  messages: Message[];
+  members: Member[]
+  newReactions: Reaction[];
   delete: () => Promise<void>;
   deleteAllMessages: (deleteForMe?: boolean) => Promise<void>;
   hide: () => Promise<void>;
@@ -161,17 +176,9 @@ interface Channel {
   createAttachmentBuilder: (url: string, type: string) => AttachmentBuilder;
   createThread: (messageId: string) => Channel;
   getMessagesById: (messageIds: string[]) => Message[];
-}
-
-interface GroupChannel extends Channel {
-  subject: string;
-  label: string;
-  metadata: string;
-  avatarUrl: string;
-  role: string | null;
-
+  update: (updateChannelData: UpdateChannel) => Promise<Channel>;
+  join: () => Promise<Member>;
   createMemberBuilder: (id: string) => MemberBuilder;
-
   changeOwner: (newOwnerId: string) => Promise<Member[]>;
   changeMembersRole: (members: MemberParams[]) => Promise<Member[]>;
   addMembers: (members: MemberParams[]) => Promise<Member[]>;
@@ -181,26 +188,8 @@ interface GroupChannel extends Channel {
   leave: () => Promise<void>;
   block: () => Promise<void>;
   unblock: () => Promise<void>;
-}
 
-interface DirectChannel extends Channel {
-  peer: Member;
-  label: string;
-  metadata: string;
-  create(channelData: CreateDirectChannel): Promise<DirectChannel>;
-  update: (channelConfig: DirectChannelConfig) => Promise<DirectChannel>;
-}
-
-interface PrivateChannel extends GroupChannel {
-  create(channelData: CreatePrivateChannel): Promise<PrivateChannel>;
-  update: (channelConfig: PrivateChannelConfig) => Promise<PrivateChannel>;
-}
-
-interface PublicChannel extends GroupChannel {
-  uri: string;
-  create(channelData: CreatePublicChannel): Promise<PublicChannel>;
-  update: (channelConfig: PublicChannelConfig) => Promise<PublicChannel>;
-  join: () => Promise<Member>;
+  create(channelData: CreateChannel): Promise<Channel>;
 }
 
 declare class MemberBuilder {
@@ -223,7 +212,7 @@ interface Message {
   createdAt: Date | number;
   updatedAt: Date | number;
   incoming: boolean;
-  user: User;
+  user?: User;
   state: 'None' | 'Edited' | 'Deleted';
   deliveryStatus:  'Pending' | 'Sent' | 'Delivered' | 'Read' | 'Failed';
   selfMarkers:  string[];
@@ -340,9 +329,7 @@ interface BlockedUserListQuery {
 }
 
 declare class ChannelListQueryBuilder extends QueryBuilder {
-  public: () => this;
-  private: () => this;
-  direct: () => this;
+  type: (type: string) => this
   limit: (count: number) => this;
   sortByLastMessage: () => this;
   sortByCreationDate: () => this;
@@ -365,13 +352,13 @@ interface ChannelListQuery {
   readonly loading: boolean;
   offset: number;
   limit: number;
-  readonly totalUnreadChannelsCount: number;
-  readonly totalUnreadMessagesCount: number;
-  readonly totalChannelsCount;
+  readonly totalUnreadChannelCount: number;
+  readonly totalUnreadMessageCount: number;
+  readonly totalChannelCount;
   loadNextPage: () => Promise<{
-    channels: (PrivateChannel | PublicChannel | DirectChannel)[];
-    totalUnreadChannelsCount: number;
-    totalUnreadMessagesCount: number;
+    channels: Channel[];
+    totalUnreadChannelCount: number;
+    totalUnreadMessageCount: number;
     hasNext: boolean;
   }>;
 }
@@ -648,46 +635,22 @@ interface MemberParams {
   id: string;
 }
 
-interface CreatePublicChannel {
-  members: MemberParams[];
-  metadata?: string;
+interface CreateChannel {
+  type: string
+  members: Member[];
   subject: string;
-  avatarUrl?: string;
-  label?: string;
+  metadata: string;
+  avatarUrl: string;
+  label: string;
   uri: string;
 }
 
-interface CreatePrivateChannel {
-  members: MemberParams[];
-  metadata?: string;
+export interface UpdateChannel {
   subject: string;
-  avatarUrl?: string;
-  label?: string;
-}
-interface CreateDirectChannel {
-  userId: string;
-  metadata?: string;
-  label?: string;
-}
-
-export interface PublicChannelConfig {
+  metadata: string;
+  avatarUrl: string;
+  label: string;
   uri: string;
-  subject: string;
-  metadata: string;
-  avatar: string;
-  label: string;
-}
-
-export interface PrivateChannelConfig {
-  subject: string;
-  metadata: string;
-  avatar: string;
-  label: string;
-}
-
-export interface DirectChannelConfig {
-  metadata: string;
-  label: string;
 }
 
 interface UserProfile {
