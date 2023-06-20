@@ -154,7 +154,7 @@ interface Channel {
   members: Member[]
   newReactions: Reaction[];
   delete: () => Promise<void>;
-  deleteAllMessages: (deleteForMe?: boolean) => Promise<void>;
+  deleteAllMessages: (forEveryone?: boolean) => Promise<void>;
   hide: () => Promise<void>;
   unhide: () => Promise<void>;
   markAsUnRead: () => Promise<Channel>;
