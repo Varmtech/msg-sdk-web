@@ -133,14 +133,14 @@ interface Channel {
   createdAt: Date;
   updatedAt: Date | null
   messagesClearedAt: Date | null
+  createdBy?: User;
   memberCount: number;
   messageCount: number;
-  createdBy?: User;
-  role: string;
+  userRole: string;
   unread: boolean;
   newMessageCount: number;
   newMentionCount: number;
-  newReactionCount: number;
+  newReactedMessageCount: number;
   hidden: boolean
   archived: boolean
   muted: boolean;
@@ -161,8 +161,8 @@ interface Channel {
   markAsRead: () => Promise<Channel>;
   mute: (muteExpireTime: number) => Promise<Channel>;
   unmute: () => Promise<Channel>;
-  markMessagesAsDelivered: (messageIds: string[]) => Promise<void>;
-  markMessagesAsRead: (messageIds: string[]) => Promise<void>;
+  markMessagesAsReceived: (messageIds: string[]) => Promise<MessageListMarker>;
+  markMessagesAsDisplayed: (messageIds: string[]) => Promise<MessageListMarker>;
   startTyping: () => void;
   stopTyping: () => void;
   sendMessage: (message: Message) => Promise<Message>;
@@ -206,27 +206,30 @@ interface Member extends User {
 interface Message {
   id: string;
   tid?: number;
+  channelId: string;
+  parentMessage?: Message | null;
+  user?: User;
   body: string;
   type: string;
   metadata?: string;
   createdAt: Date | number;
   updatedAt: Date | number;
-  incoming: boolean;
-  user?: User;
-  state: 'None' | 'Edited' | 'Deleted';
+  state: 'Unmodified' | 'Edited' | 'Deleted';
   deliveryStatus:  'Pending' | 'Sent' | 'Delivered' | 'Read' | 'Failed';
-  selfMarkers:  string[];
-  attachments: Attachment[];
-  selfReactions: Reaction[];
-  lastReactions: Reaction[];
-  reactionScores: { [key: string]: number } | null;
+  transient: boolean;
+  silent: boolean;
   mentionedUsers: User[];
+  attachments: Attachment[];
+  reactionTotals: ReactionTotal [];
+  userReactions: Reaction[];
+  incoming: boolean;
+  markerTotals?: MarkerTotal[];
+  userMarkers:  Marker[];
+  lastReactions: Reaction[];
   requestedMentionUserIds?: string[];
   parent?: Message;
   replyInThread?: boolean;
   replyCount?: number;
-  transient: boolean;
-  silent: boolean;
   forwardingDetails?: {
     channelId: string
     hops: number
@@ -284,6 +287,12 @@ interface Reaction {
   reason: string;
   updatedAt: Date;
   user: User
+}
+
+interface ReactionTotal {
+  key: string;
+  score: number;
+  count: number;
 }
 
 declare class QueryBuilder {
@@ -690,6 +699,18 @@ interface MessageListMarker {
   user: User;
   name: string;
   createAt: Date
+}
+
+interface MarkerTotal {
+  name: string;
+  count: Date
+}
+
+interface Marker {
+  name: string;
+  messageId: string;
+  createdAt: Date;
+  user: User | null
 }
 
 type ConnectionState = 'Connecting' | 'Connected' | 'Disconnected' | 'Failed' | 'Reconnecting'
