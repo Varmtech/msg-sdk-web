@@ -135,7 +135,6 @@ interface Channel {
   messagesClearedAt: Date | null
   createdBy?: User;
   memberCount: number;
-  messageCount: number;
   userRole: string;
   unread: boolean;
   newMessageCount: number;
@@ -208,34 +207,33 @@ interface Message {
   tid?: number;
   channelId: string;
   parentMessage?: Message | null;
-  user?: User;
-  body: string;
   type: string;
-  metadata?: string;
-  createdAt: Date | number;
-  updatedAt: Date | number;
   state: 'Unmodified' | 'Edited' | 'Deleted';
   deliveryStatus:  'Pending' | 'Sent' | 'Delivered' | 'Read' | 'Failed';
   transient: boolean;
   silent: boolean;
+  body: string;
+  metadata?: string;
+  user?: User;
   mentionedUsers: User[];
   attachments: Attachment[];
   reactionTotals: ReactionTotal [];
   userReactions: Reaction[];
-  incoming: boolean;
   markerTotals?: MarkerTotal[];
   userMarkers:  Marker[];
-  lastReactions: Reaction[];
-  requestedMentionUserIds?: string[];
-  parent?: Message;
-  replyInThread?: boolean;
-  replyCount?: number;
   forwardingDetails?: {
     channelId: string
     hops: number
     messageId: string
     user: User
   }
+  replyCount?: number;
+  createdAt: Date;
+  updatedAt?: Date;
+  autoDeleteDate?: Date
+  requestedMentionUserIds?: string[];
+  replyInThread?: boolean;
+  incoming: boolean;
 
   mentionUserIds: () => string[];
 }
@@ -257,13 +255,15 @@ declare class MessageBuilder {
 
 interface Attachment {
   id: string;
-  createdAt: Date;
-  url: string;
-  type: string;
+  messageId: string;
   name: string;
+  type: string;
   metadata: string;
-  uploadedFileSize?: number;
-  user: User;
+  url: string;
+  size?: number;
+  createdAt: Date | null
+  upload: boolean
+  user?: User
 }
 
 declare class AttachmentBuilder {
