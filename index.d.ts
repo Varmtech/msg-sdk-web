@@ -110,7 +110,7 @@ declare interface User {
     status: string,
     lastActiveAt: Date
   };
-  activityState: 'Active' | 'Inactive' | "Deleted"
+  state: 'active' | 'inactive' | "deleted"
 }
 
 declare interface Contact {
@@ -260,7 +260,7 @@ interface Attachment {
   type: string;
   metadata: string;
   url: string;
-  size?: number;
+  size?: string;
   createdAt: Date | null
   upload: boolean
   user?: User
@@ -338,7 +338,7 @@ interface BlockedUserListQuery {
 }
 
 declare class ChannelListQueryBuilder extends QueryBuilder {
-  type: (type: string) => this
+  type: (type: string[]) => this
   limit: (count: number) => this;
   sortByLastMessage: () => this;
   sortByCreationDate: () => this;
@@ -715,7 +715,7 @@ interface Marker {
 
 type ConnectionState = 'Connecting' | 'Connected' | 'Disconnected' | 'Failed' | 'Reconnecting'
 
-type UserPresenceState = 'Offline' | 'Online' | 'Invisible' | 'Away' | 'DND'
+type UserPresenceState = 'offline' | 'online' | 'invisible' | 'away' | 'dnd'
 
 interface SceytChatError extends Error{
   message: string,
