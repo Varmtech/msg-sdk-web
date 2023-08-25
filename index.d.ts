@@ -208,8 +208,8 @@ interface Message {
   channelId: string;
   parentMessage?: Message | null;
   type: string;
-  state: 'Unmodified' | 'Edited' | 'Deleted';
-  deliveryStatus:  'Pending' | 'Sent' | 'Delivered' | 'Read' | 'Failed';
+  state: 'unmodified' | 'edited' | 'deleted';
+  deliveryStatus:  'pending' | 'sent' | 'delivered' | 'read' | 'failed';
   transient: boolean;
   silent: boolean;
   body: string;
