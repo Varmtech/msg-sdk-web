@@ -338,20 +338,13 @@ interface BlockedUserListQuery {
 }
 
 declare class ChannelListQueryBuilder extends QueryBuilder {
-  type: (type: string[]) => this
+  query: (query: string) => this
+  types: (types: string[]) => this
   limit: (count: number) => this;
-  sortByLastMessage: () => this;
-  sortByCreationDate: () => this;
-  uriBeginsWith: (word: string) => this;
-  uriEquals: (word: string) => this;
-  uriContains: (word: string) => this;
-  subjectBeginsWith: (word: string) => this;
-  subjectEquals: (word: string) => this;
-  subjectContains: (word: string) => this;
-  userBeginsWith: (word: string) => this;
-  userEquals: (word: string) => this;
-  userContains: (word: string) => this;
-  labelEquals: (word: string) => this;
+  offset: (offset: number) => this;
+  order: (orderBy: 'lastMessage' | 'createdAt') => this;
+  filterKey: (keys: ('subject' | 'uri' | 'state' | 'cratedAt')[]) => this;
+  searchOperator: (operator: 'contains' | 'beginsWith' | 'equal' | 'lowerThan' | 'lowerThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'between') => this;
   build: () => ChannelListQuery;
 }
 
@@ -720,4 +713,6 @@ type UserPresenceState = 'offline' | 'online' | 'invisible' | 'away' | 'dnd'
 interface SceytChatError extends Error{
   message: string,
   code: number
+  type?: string,
+  traceId?: string
 }
