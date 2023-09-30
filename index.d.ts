@@ -202,6 +202,13 @@ interface Member extends User {
   role: string;
 }
 
+interface BodyAttribute {
+  type: string;
+  metadata: string;
+  offset: number;
+  length: number;
+}
+
 interface Message {
   id: string;
   tid?: number;
@@ -221,6 +228,7 @@ interface Message {
   userReactions: Reaction[];
   markerTotals?: MarkerTotal[];
   userMarkers:  Marker[];
+  bodyAttributes: BodyAttribute[] | []
   forwardingDetails?: {
     channelId: string
     hops: number
