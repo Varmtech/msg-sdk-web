@@ -1,6 +1,6 @@
 {
   "name": "sceyt-chat",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "author": "Sceyt LLC developer@sceyt.com",
   "description": "",
   "main": "index.js",
@@ -10,6 +10,17 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Varmtech/msg-sdk-web"
+  },
+  "dependencies": {
+    "axios": "^0.21.0",
+    "hashids": "^2.2.1",
+    "loglevel": "^1.8.0",
+    "loglevel-plugin-prefix": "^0.8.4",
+    "long": "^4.0.0",
+    "protobufjs": "~6.9.0",
+    "uuidv4": "^6.2.6",
+    "isomorphic-ws": "^5.0.0",
+    "ws": "^8.13.0"
   },
   "license": "ISC"
 }
